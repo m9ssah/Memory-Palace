@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import type { Memory } from "@/types";
@@ -25,10 +26,10 @@ const DOOR_SLOTS = [
 ];
 
 const FALLBACK_MEMORIES: LobbyMemory[] = [
-  { id: "memory-1", title: "Grandma's Kitchen", year: "Summer 1974", hue: "#C47840", light: 0xC47840 },
-  { id: "memory-2", title: "Birthday at the Lake", year: "August 1982", hue: "#5E8EA8", light: 0x5E8EA8 },
-  { id: "memory-3", title: "The Old Garden", year: "Spring 1969", hue: "#6A9A6A", light: 0x6A9A6A },
-  { id: "memory-4", title: "Christmas Morning", year: "December 1978", hue: "#A86070", light: 0xA86070 },
+  { id: "memory-1", title: "Grandma's Kitchen", year: "Summer 1974", hue: "#7A43FC", light: 0x7A43FC },
+  { id: "memory-2", title: "Birthday at the Lake", year: "August 1982", hue: "#9B6BFF", light: 0x9B6BFF },
+  { id: "memory-3", title: "The Old Garden", year: "Spring 1969", hue: "#5E2EB8", light: 0x5E2EB8 },
+  { id: "memory-4", title: "Christmas Morning", year: "December 1978", hue: "#B48AFF", light: 0xB48AFF },
 ];
 
 function labelYear(dateText?: string): string {
@@ -161,7 +162,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.6;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a0800);
@@ -180,7 +181,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     const standardMat = (color: number, roughness = 0.95, emissive = 0x000000, emissiveIntensity = 0) =>
       new THREE.MeshStandardMaterial({ color, roughness, metalness: 0, emissive, emissiveIntensity });
 
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD, 8, 8), standardMat(0x4a2e12, 0.97));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD, 8, 8), standardMat(0x514944, 0.97));
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
@@ -188,14 +189,14 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     for (let i = -5; i <= 5; i += 1) {
       const plank = new THREE.Mesh(
         new THREE.PlaneGeometry(0.14, roomD),
-        new THREE.MeshStandardMaterial({ color: 0x5c3818, roughness: 1 }),
+        new THREE.MeshStandardMaterial({ color: 0x3B3937, roughness: 0.25 }),
       );
       plank.rotation.x = -Math.PI / 2;
-      plank.position.set(i * 1.1, 0.001, 0);
+      plank.position.set(i * 1.1, 0.005, 0);
       scene.add(plank);
     }
 
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), standardMat(0x2a1a0a, 0.9));
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), standardMat(0xffffff, 0.9));
     ceiling.rotation.x = Math.PI / 2;
     ceiling.position.y = roomH;
     scene.add(ceiling);
@@ -208,14 +209,14 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     ];
 
     for (const wallDef of wallDirs) {
-      const wall = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomH), standardMat(0xc2a07a, 0.95));
+      const wall = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomH), standardMat(0x313d5a, 0.95));
       wall.position.set(wallDef.pos[0], wallDef.pos[1], wallDef.pos[2]);
       wall.rotation.y = wallDef.ry;
       wall.receiveShadow = true;
       scene.add(wall);
     }
 
-    const trimMaterial = standardMat(0x5c3818, 0.85);
+    const trimMaterial = standardMat(0xd1ced9, 0.85);
     for (const wallDef of wallDirs) {
       const base = new THREE.Mesh(new THREE.BoxGeometry(roomW, 0.18, 0.06), trimMaterial);
       base.position.set(wallDef.pos[0], 0.09, wallDef.pos[2]);
@@ -228,26 +229,26 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       scene.add(crown);
     }
 
-    const rugBorder = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6), standardMat(0xc4a24a, 0.98));
+    const rugBorder = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6), standardMat(0x2e2050, 0.98));
     rugBorder.rotation.x = -Math.PI / 2;
-    rugBorder.position.set(0, 0.001, 0);
+    rugBorder.position.set(0, 0.010, 0);
     scene.add(rugBorder);
 
-    const rug = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), standardMat(0x7a2a2a, 0.99));
+    const rug = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), standardMat(0x7A43FC, 0.99));
     rug.rotation.x = -Math.PI / 2;
-    rug.position.set(0, 0.002, 0);
+    rug.position.set(0, 0.018, 0);
     scene.add(rug);
 
-    const diamond = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), standardMat(0x9a3a3a, 0.99));
+    const diamond = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), standardMat(0x5438a0, 0.99));
     diamond.rotation.x = -Math.PI / 2;
     diamond.rotation.z = Math.PI / 4;
-    diamond.position.set(0, 0.003, 0);
+    diamond.position.set(0, 0.026, 0);
     scene.add(diamond);
 
-    scene.add(new THREE.AmbientLight(0xffd4a0, 0.25));
-    scene.add(new THREE.HemisphereLight(0xffcc88, 0x220d00, 0.3));
+    scene.add(new THREE.AmbientLight(0xF3CFA5, 0.55));
+    scene.add(new THREE.HemisphereLight(0xF2A5A5, 0x0d0820, 0.55));
 
-    const pendantLight = new THREE.PointLight(0xffe4a0, 2, 14);
+    const pendantLight = new THREE.PointLight(0x953030, 3.5, 16);
     pendantLight.position.set(0, roomH - 0.35, 0);
     pendantLight.castShadow = true;
     pendantLight.shadow.mapSize.set(512, 512);
@@ -256,9 +257,9 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     const lampShade = new THREE.Mesh(
       new THREE.CylinderGeometry(0.04, 0.22, 0.28, 10),
       new THREE.MeshStandardMaterial({
-        color: 0x8b6914,
-        emissive: 0xffcc44,
-        emissiveIntensity: 0.5,
+        color: 0xD7811D,
+        emissive: 0xB46B18,
+        emissiveIntensity: .3,
         side: THREE.DoubleSide,
       }),
     );
@@ -302,10 +303,10 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       group.rotation.y = slot.ry;
 
       const frameMat = new THREE.MeshStandardMaterial({
-        color: 0x7a5620,
+        color: 0x3d2a72,
         roughness: 0.55,
         metalness: 0.05,
-        emissive: 0x3d1a00,
+        emissive: 0x2a186e,
         emissiveIntensity: 0.15,
       });
 
@@ -362,7 +363,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       group.add(panel);
       doorMeshes.push(panel);
 
-      const knobMat = new THREE.MeshStandardMaterial({ color: 0xdaa520, roughness: 0.2, metalness: 0.85 });
+      const knobMat = new THREE.MeshStandardMaterial({ color: 0x9a7afc, roughness: 0.2, metalness: 0.85 });
       const knob = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12), knobMat);
       knob.position.set(0.72, doorHeight / 2, 0.12);
       group.add(knob);
@@ -376,7 +377,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
 
     const tableTop = new THREE.Mesh(
       new THREE.BoxGeometry(1.4, 0.05, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0x6b3a1a, roughness: 0.7, metalness: 0.05 }),
+      new THREE.MeshStandardMaterial({ color: 0x2e2060, roughness: 0.7, metalness: 0.05 }),
     );
     tableTop.position.set(4, 0.78, 4);
     tableTop.castShadow = true;
@@ -390,7 +391,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     ].forEach((legPos) => {
       const leg = new THREE.Mesh(
         new THREE.BoxGeometry(0.06, 0.76, 0.06),
-        new THREE.MeshStandardMaterial({ color: 0x5c3010, roughness: 0.8 }),
+        new THREE.MeshStandardMaterial({ color: 0x231848, roughness: 0.8 }),
       );
       leg.position.set(legPos[0], 0.38, legPos[2]);
       scene.add(leg);
@@ -398,14 +399,14 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
 
     const vase = new THREE.Mesh(
       new THREE.CylinderGeometry(0.06, 0.1, 0.28, 10),
-      new THREE.MeshStandardMaterial({ color: 0x4a6a8a, roughness: 0.3, metalness: 0.1 }),
+      new THREE.MeshStandardMaterial({ color: 0x5F5C90, roughness: 0.3, metalness: 0.1 }),
     );
     vase.position.set(4.1, 0.95, 4);
     scene.add(vase);
 
     const lampBase = new THREE.Mesh(
       new THREE.CylinderGeometry(0.04, 0.09, 0.3, 8),
-      new THREE.MeshStandardMaterial({ color: 0xdaa520, roughness: 0.4, metalness: 0.6 }),
+      new THREE.MeshStandardMaterial({ color: 0x9a7afc, roughness: 0.4, metalness: 0.6 }),
     );
     lampBase.position.set(3.8, 0.93, 4);
     scene.add(lampBase);
@@ -415,15 +416,15 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       new THREE.MeshStandardMaterial({
         color: 0xf5e0b0,
         roughness: 0.9,
-        emissive: 0xffcc44,
-        emissiveIntensity: 0.4,
+        emissive: 0xffaa44,
+        emissiveIntensity: 0.6,
         side: THREE.DoubleSide,
       }),
     );
     tableLampShade.position.set(3.8, 1.22, 4);
     scene.add(tableLampShade);
 
-    const tableLight = new THREE.PointLight(0xffe0a0, 0.6, 4);
+    const tableLight = new THREE.PointLight(0x9A6450, 1.4, 5);
     tableLight.position.set(3.8, 1.3, 4);
     scene.add(tableLight);
 
@@ -445,7 +446,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
     const dustMesh = new THREE.Points(
       dustGeo,
-      new THREE.PointsMaterial({ color: 0xffe8c0, size: 0.018, transparent: true, opacity: 0.35 }),
+      new THREE.PointsMaterial({ color: 0xd4c0ff, size: 0.018, transparent: true, opacity: 0.35 }),
     );
     scene.add(dustMesh);
 
@@ -461,6 +462,10 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     let pitch = 0;
     let clock = 0;
     let hoveredDoor: typeof doorMeshes[number] | null = null;
+    const keys: Record<string, boolean> = {};
+    const WALK_SPEED = 0.055;
+    const WALL_MARGIN = 0.45;
+    const moveDir = new THREE.Vector3();
 
     const setCanvasSize = () => {
       const width = canvas.clientWidth || window.innerWidth;
@@ -554,6 +559,12 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       setSelectedMemory(hoveredDoor.userData.memory);
     };
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (["KeyW", "KeyA", "KeyS", "KeyD"].includes(e.code)) e.preventDefault();
+      keys[e.code] = true;
+    };
+    const onKeyUp = (e: KeyboardEvent) => { keys[e.code] = false; };
+
     let frameId = 0;
     const animate = () => {
       frameId = window.requestAnimationFrame(animate);
@@ -564,8 +575,20 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       camera.rotation.y = yaw;
       camera.rotation.x = pitch;
 
-      pendantLight.intensity = 2 + Math.sin(clock * 0.6) * 0.08 + Math.sin(clock * 2.1) * 0.04;
-      tableLight.intensity = 0.6 + Math.sin(clock * 1.4) * 0.05;
+      moveDir.set(0, 0, 0);
+      if (keys["KeyW"]) moveDir.z -= 1;
+      if (keys["KeyS"]) moveDir.z += 1;
+      if (keys["KeyA"]) moveDir.x -= 1;
+      if (keys["KeyD"]) moveDir.x += 1;
+      if (moveDir.lengthSq() > 0) {
+        moveDir.normalize().applyEuler(new THREE.Euler(0, yaw, 0)).multiplyScalar(WALK_SPEED);
+        camera.position.x = Math.max(-(halfW - WALL_MARGIN), Math.min(halfW - WALL_MARGIN, camera.position.x + moveDir.x));
+        camera.position.z = Math.max(-(halfD - WALL_MARGIN), Math.min(halfD - WALL_MARGIN, camera.position.z + moveDir.z));
+        camera.position.y = 1.65;
+      }
+
+      pendantLight.intensity = 7 + Math.sin(clock * 0.6) * 0.15 + Math.sin(clock * 2.1) * 0.08;
+      tableLight.intensity = 20 + Math.sin(clock * 1.4) * 0.1;
 
       const positions = dustGeo.attributes.position.array as Float32Array;
       for (let i = 0; i < dustCount; i += 1) {
@@ -601,6 +624,8 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("resize", setCanvasSize);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
 
     return () => {
       window.cancelAnimationFrame(frameId);
@@ -614,6 +639,8 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       window.removeEventListener("mouseup", onMouseUp);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", setCanvasSize);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
 
       scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh || object instanceof THREE.Points)) return;
@@ -640,15 +667,24 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
   const tooltipText = hoveredMemory ? `"${hoveredMemory.title}" - click to enter` : "Select a memory to begin";
 
   return (
-    <div className="relative h-[78vh] min-h-[38rem] w-full overflow-hidden rounded-[2rem] border border-amber-200/10 bg-[#1a0800]">
+    <div className="relative h-full w-full overflow-hidden bg-[#0d0a1e]">
       <canvas ref={canvasRef} className="h-full w-full" />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-7">
-        <div className="text-[20px] uppercase tracking-[0.25em] text-amber-100/90">
-          Memoir
-          <span className="mt-1 block text-[11px] italic tracking-[0.4em] text-amber-300/45">Memory Palace</span>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-purple-300/25 text-purple-300/60 transition-colors hover:border-purple-300/60 hover:text-purple-100"
+            title="Exit lobby"
+          >
+            ←
+          </Link>
+          <div className="text-[20px] uppercase tracking-[0.25em] text-purple-100/90">
+            Memoir
+            <span className="mt-1 block text-[11px] italic tracking-[0.4em] text-purple-300/75">Memory Palace</span>
+          </div>
         </div>
-        <div className="text-right text-[12px] italic tracking-[0.2em] text-amber-300/45">
+        <div className="text-right text-[12px] italic tracking-[0.2em] text-purple-300/45">
           Drag to look around
           <br />
           Click a door to enter
@@ -656,7 +692,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-7 flex justify-center">
-        <div className="text-[12px] italic tracking-[0.2em] text-amber-200/70">{tooltipText}</div>
+        <div className="text-[12px] italic tracking-[0.2em] text-purple-200/70">{tooltipText}</div>
       </div>
 
       <div
@@ -668,11 +704,11 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
         }}
       >
         <div
-          className={`w-[90%] max-w-[360px] rounded-[14px] border border-amber-200/20 bg-[rgba(20,10,3,0.94)] px-11 py-9 text-center text-amber-100 backdrop-blur-md transition-all duration-300 ${selectedMemory ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-90 opacity-0"}`}
+          className={`w-[90%] max-w-[360px] rounded-[14px] border border-purple-300/20 bg-[rgba(13,10,30,0.94)] px-11 py-9 text-center text-purple-100 backdrop-blur-md transition-all duration-300 ${selectedMemory ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-90 opacity-0"}`}
         >
-          <div className="mb-3 text-[10px] uppercase tracking-[0.35em] text-amber-300/45">Memory</div>
+          <div className="mb-3 text-[10px] uppercase tracking-[0.35em] text-purple-300/45">Memory</div>
           <div className="text-[26px] font-bold">{selectedMemory?.title ?? ""}</div>
-          <div className="mb-7 mt-1 text-[13px] tracking-[0.15em] text-amber-200/55">{selectedMemory?.year ?? ""}</div>
+          <div className="mb-7 mt-1 text-[13px] tracking-[0.15em] text-purple-200/55">{selectedMemory?.year ?? ""}</div>
 
           <div className="flex justify-center gap-3">
             <button
@@ -685,7 +721,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
                   router.push(`/viewer/${selectedMemory.id}`);
                 }, 400);
               }}
-              className="rounded-md border border-amber-300/50 bg-amber-700/25 px-6 py-2.5 text-[14px] tracking-[0.05em] text-amber-100 transition-colors hover:bg-amber-700/40 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-md border border-purple-400/50 bg-purple-700/25 px-6 py-2.5 text-[14px] tracking-[0.05em] text-purple-100 transition-colors hover:bg-purple-700/40 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Enter Memory
             </button>
@@ -699,7 +735,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
             </button>
           </div>
 
-          {isEntering ? <div className="mt-3 text-[13px] text-amber-300/45">Loading your world...</div> : null}
+          {isEntering ? <div className="mt-3 text-[13px] text-purple-300/45">Loading your world...</div> : null}
         </div>
       </div>
     </div>
