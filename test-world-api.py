@@ -2,7 +2,7 @@
 World Labs Marble API - Test Script
 ====================================
 Tests the World Generation API with text and image inputs.
-Uses Draft (Marble 0.1-mini) by default to conserve credits.
+Uses (Marble 0.1-mini) by default to conserve credits.
 
 Credit costs (Draft / Marble 0.1-mini):
   - Text input:      230 credits (80 pano + 150 world)
