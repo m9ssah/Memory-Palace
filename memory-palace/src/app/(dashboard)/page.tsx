@@ -1,37 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import StatsOverview from "@/components/dashboard/StatsOverview";
 import NewSessionModal from "@/components/dashboard/NewSessionModal";
 import { formatDate, formatDuration } from "@/lib/utils";
+import { supabase } from "@/lib/db";
 import type { Session } from "@/types";
-
-// TODO: Replace with real data fetching from supabase
-const mockSession: Session = {
-  id: "s-001",
-  memoryId: "m-001",
-  memoryTitle: "Grandma's Garden",
-  startedAt: "2026-03-12T10:30:00Z",
-  endedAt: "2026-03-12T11:05:00Z",
-  durationMinutes: 35,
-  engagementScore: 82,
-  notes:
-    "Patient was very responsive when viewing the rose bushes. Mentioned her mother's garden in detail. Good emotional connection observed.",
-};
-
-const mockStats = [
-  { label: "Total Sessions", value: "12" },
-  { label: "Total Memories", value: "5" },
-  { label: "Avg Duration", value: formatDuration(28) },
-  { label: "Avg Engagement", value: "78%" },
-];
 
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const patientName = "Patient";
-  const recentSession: Session | null = mockSession;
+  const [recentSession, setRecentSession] = useState<Session | null>(null);
+  const [stats, setStats] = useState([
+    { label: "Total Sessions", value: "–" },
+    { label: "Total Memories", value: "–" },
+    { label: "Avg Duration", value: "–" },
+    { label: "Avg Engagement", value: "–" },
+  ]);
+  const [patientName, setPatientName] = useState("Patient");
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      // fetch patient
+      const { data: patient } = await supabase
+        .from("patients")
+        .select("name")
+        .eq("id", "default")
+        .single();
+      if (patient?.name) setPatientName(patient.name);
+
+      // fetch most recent session with memory title
+      const { data: sessions } = await supabase
+        .from("sessions")
+        .select("*, memories(title)")
+        .order("started_at", { ascending: false })
+        .limit(1);
+
+      if (sessions && sessions.length > 0) {
+        const s = sessions[0];
+        setRecentSession({
+          id: s.id,
+          memoryId: s.memory_id,
+          memoryTitle: s.memories?.title ?? undefined,
+          startedAt: s.started_at,
+          endedAt: s.ended_at ?? undefined,
+          durationMinutes: s.duration_minutes ?? undefined,
+          engagementScore: s.engagement_score ?? undefined,
+          notes: s.notes ?? undefined,
+        });
+      }
+
+      // fetch stats
+      const { count: totalSessions } = await supabase
+        .from("sessions")
+        .select("*", { count: "exact", head: true });
+
+      const { count: totalMemories } = await supabase
+        .from("memories")
+        .select("*", { count: "exact", head: true });
+
+      const { data: durationData } = await supabase
+        .from("sessions")
+        .select("duration_minutes")
+        .not("duration_minutes", "is", null);
+
+      const { data: engagementData } = await supabase
+        .from("sessions")
+        .select("engagement_score")
+        .not("engagement_score", "is", null);
+
+      const avgDuration =
+        durationData && durationData.length > 0
+          ? durationData.reduce((sum, s) => sum + s.duration_minutes, 0) / durationData.length
+          : 0;
+
+      const avgEngagement =
+        engagementData && engagementData.length > 0
+          ? engagementData.reduce((sum, s) => sum + s.engagement_score, 0) / engagementData.length
+          : 0;
+
+      setStats([
+        { label: "Total Sessions", value: String(totalSessions ?? 0) },
+        { label: "Total Memories", value: String(totalMemories ?? 0) },
+        { label: "Avg Duration", value: avgDuration > 0 ? formatDuration(Math.round(avgDuration)) : "–" },
+        { label: "Avg Engagement", value: avgEngagement > 0 ? `${Math.round(avgEngagement)}%` : "–" },
+      ]);
+    }
+
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -46,7 +104,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Stats */}
-      <StatsOverview stats={mockStats} />
+      <StatsOverview stats={stats} />
 
       {/* Past Session Summary */}
       <section>
