@@ -16,7 +16,7 @@ Credit costs (Standard / Marble 0.1-plus):
 
 Usage:
   export WLT_API_KEY="your_api_key_here"
-  
+
   # Test with text prompt (cheapest - 230 credits on Draft)
   python test_marble_api.py --mode text --prompt "A cozy 1960s kitchen with floral wallpaper"
 
@@ -63,7 +63,9 @@ def api_request(method, path, api_key, data=None, binary_data=None, extra_header
         headers.update(extra_headers)
 
     if binary_data is not None:
-        req = urllib.request.Request(url, data=binary_data, headers=headers, method=method)
+        req = urllib.request.Request(
+            url, data=binary_data, headers=headers, method=method
+        )
     elif data is not None:
         body = json.dumps(data).encode("utf-8")
         headers["Content-Type"] = "application/json"
@@ -95,7 +97,9 @@ def poll_operation(api_key, operation_id, timeout=600, interval=10):
         result = api_request("GET", f"/operations/{operation_id}", api_key)
 
         status = result.get("metadata", {}).get("progress", {}).get("status", "UNKNOWN")
-        description = result.get("metadata", {}).get("progress", {}).get("description", "")
+        description = (
+            result.get("metadata", {}).get("progress", {}).get("description", "")
+        )
         elapsed = int(time.time() - start)
 
         print(f"  [{elapsed:>3}s] {status}: {description}")
@@ -246,7 +250,9 @@ def test_image_file_generation(api_key, image_path, text_prompt, model):
         "kind": "image",
         "extension": ext,
     }
-    prep_result = api_request("POST", "/media-assets:prepare_upload", api_key, data=prep_data)
+    prep_result = api_request(
+        "POST", "/media-assets:prepare_upload", api_key, data=prep_data
+    )
 
     media_asset_id = prep_result["media_asset"]["id"]
     upload_url = prep_result["upload_info"]["upload_url"]
@@ -328,9 +334,17 @@ Examples:
         required=True,
         help="Generation mode",
     )
-    parser.add_argument("--prompt", type=str, help="Text prompt (required for text mode, optional for image modes)")
-    parser.add_argument("--image-url", type=str, help="Public image URL (for image-url mode)")
-    parser.add_argument("--image-path", type=str, help="Local image file path (for image-file mode)")
+    parser.add_argument(
+        "--prompt",
+        type=str,
+        help="Text prompt (required for text mode, optional for image modes)",
+    )
+    parser.add_argument(
+        "--image-url", type=str, help="Public image URL (for image-url mode)"
+    )
+    parser.add_argument(
+        "--image-path", type=str, help="Local image file path (for image-file mode)"
+    )
     parser.add_argument(
         "--quality",
         choices=["draft", "standard"],
