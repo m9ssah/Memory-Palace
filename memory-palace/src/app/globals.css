@@ -36,3 +36,14 @@ body {
   box-shadow: 0 0 25px rgba(122, 67, 252, 0.25), 0 0 80px rgba(122, 67, 252, 0.12);
 }
 
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

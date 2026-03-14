@@ -1,7 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import StatsOverview from "@/components/dashboard/StatsOverview";
+import NewSessionModal from "@/components/dashboard/NewSessionModal";
 import { formatDate, formatDuration } from "@/lib/utils";
 import type { Session } from "@/types";
 
@@ -26,6 +29,7 @@ const mockStats = [
 ];
 
 export default function DashboardPage() {
+  const [modalOpen, setModalOpen] = useState(false);
   const patientName = "Patient";
   const recentSession: Session | null = mockSession;
 
@@ -99,12 +103,12 @@ export default function DashboardPage() {
 
       {/* Start Session */}
       <div className="flex justify-center pt-2">
-        <Link href="/lobby">
-          <Button variant="primary" size="lg">
-            Start New Session
-          </Button>
-        </Link>
+        <Button variant="primary" size="lg" onClick={() => setModalOpen(true)}>
+          Start New Session
+        </Button>
       </div>
+
+      <NewSessionModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );
 }
