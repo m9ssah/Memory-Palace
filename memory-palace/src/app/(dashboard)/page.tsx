@@ -8,7 +8,7 @@ import NewSessionModal from "@/components/dashboard/NewSessionModal";
 import { formatDate, formatDuration } from "@/lib/utils";
 import type { Session } from "@/types";
 
-// TODO: Replace with real data fetching from API
+// TODO: Replace with real data fetching from supabase
 const mockSession: Session = {
   id: "s-001",
   memoryId: "m-001",

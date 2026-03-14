@@ -2,7 +2,7 @@
 
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
+import { Float, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 function createBrainGeometry() {
@@ -75,7 +75,7 @@ function BrainMesh() {
           <meshStandardMaterial
             ref={coreMat}
             color="#e9d5ff"
-            emissive="#a865db"
+            emissive="#8954b2"
             emissiveIntensity={1.2}
             transparent
             opacity={0.55}
@@ -130,12 +130,19 @@ function BrainMesh() {
 
 export default function Brain3D() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0">
+    <div className="absolute inset-0 z-0">
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ alpha: true, antialias: true }}
         style={{ background: "transparent" }}
       >
+        <OrbitControls
+          enableZoom
+          enableRotate={false}
+          enablePan={false}
+          minDistance={2}
+          maxDistance={10}
+        />
         <ambientLight intensity={0.2} />
         <pointLight position={[0, 0, 3]} intensity={2} color="#e9d5ff" />
         <pointLight position={[2, 1, -1]} intensity={1} color="#f0abfc" />
