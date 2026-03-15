@@ -1,17 +1,27 @@
 # Memory Palace
 
-A therapeutic platform that helps patients engage with and recall their memories through AI-powered conversations and immersive 3D environments. Memory Palace is designed to support cognitive therapy, memory rehabilitation, and engagement for patients with memory impairments, including those with early-stage dementia.
+There's a recurring image in films about dementia — a loved one patiently retelling cherished memories, desperate to keep someone tethered to who they are. For many, that's not a movie scene. It's Sunday afternoon. It's a phone call that ends in silence.
+
+My grandfather recently began to develop memory loss, and with them, pieces of the moments we built together. Watching that happen is its own kind of grief — and it's what pushed us to act.
+
+We built a tool for people like him. Traditional memory exercises can feel cold and clinical, so we wanted something different: reminiscence that feels immersive, emotionally resonant, and deeply personal. A place where meaningful life moments aren't just recalled — they're revisited. Patients can explore the spaces, stories, and feelings that shaped who they are, and reconnect with the people who matter most.
+
+This project is a therapeutic platform that helps patients engage with and recall their memories through AI-powered conversations and immersive 3D environments. Memory Palace is designed to support cognitive therapy, memory rehabilitation, and engagement for patients with memory impairments, particularly those with dementia.
 
 ## Overview
 
 Memory Palace combines several technologies to create an integrated therapeutic experience:
 
-- **Memory Management**: Store and organize patient memories with images and descriptions
-- **AI Conversations**: Guided discussions with an intelligent conversational agent that understands context and patient history
-- **3D Immersive Worlds**: Generate photorealistic 3D environments from memories using World Labs API
-- **Session Tracking**: Monitor therapy sessions with engagement metrics and conversation logs
-- **Progress Analytics**: Visualize patient engagement trends and therapy progress over time
-- **Real-time Features**: Live speech recognition, audio synthesis, and real-time conversations
+- **Memory Management**: Caregivers store and organize patient memories with images and descriptions
+- **3D Immersive Worlds**: Generate photorealistic 3D environments from memories; patients enter a calm “memory lobby” and step into individual memories through different doors
+- **AI Conversations**: Guided discussions with an intelligent conversational agent that understands context and patient history, providing reminiscence prompts as patients walk around the 3D world
+- **Session Tracking**: Caregivers monitor therapy sessions with engagement metrics and conversation logs
+- **Progress Analytics**: Clinicans xisualize patient engagement trends and therapy progress over time
+
+## Demo
+
+[![Demo Video](https://img.youtube.com/vi/Fl4BcRY_x_4/0.jpg)](https://www.youtube.com/watch?v=Fl4BcRY_x_4)
+
 
 ## Key Features
 
@@ -21,13 +31,6 @@ Memory Palace combines several technologies to create an integrated therapeutic 
 - View memory details and associated therapy sessions
 - Track which memories have generated 3D worlds
 
-### 🗣️ AI Conversational Agent
-- Multi-turn conversations with context awareness
-- Automatic memory annotation based on therapy discussions
-- Speech recognition (OpenAI Whisper)
-- Text-to-speech synthesis for accessibility
-- Support for different AI models and customizable parameters
-
 ### 🌍 3D World Generation
 - Generate immersive 3D environments from:
   - Text descriptions of memories
@@ -35,6 +38,13 @@ Memory Palace combines several technologies to create an integrated therapeutic 
   - External image URLs
 - Uses World Labs API (Marble model) for high-quality environments
 - View worlds in an interactive 3D viewer
+
+### 🗣️ AI Conversational Agent
+- Multi-turn conversations with context awareness
+- Automatic memory annotation based on therapy discussions
+- Speech recognition (OpenAI Whisper)
+- Text-to-speech synthesis for accessibility
+- Support for different AI models and customizable parameters
 
 ### 📊 Progress Tracking
 - Dashboard with session statistics
