@@ -220,6 +220,58 @@ export async function updateSessionEngagement(sessionId: string, score: number, 
   if (error) throw error;
 }
 
+// --------------- Cognitive Profile operations ---------------
+
+export async function createCognitiveProfile(profile: {
+  id: string;
+  sessionId: string;
+  transcript: string;
+  wordFindingDifficulty: number;
+  vocabularyRichness: number;
+  informationDensity: number;
+  emotionalValence: number;
+  coherence: number;
+  totalWords: number;
+  uniqueWords: number;
+  fillerCount: number;
+  summary: string;
+}) {
+  const { error } = await supabase.from("cognitive_profiles").insert({
+    id: profile.id,
+    session_id: profile.sessionId,
+    transcript: profile.transcript,
+    word_finding_difficulty: profile.wordFindingDifficulty,
+    vocabulary_richness: profile.vocabularyRichness,
+    information_density: profile.informationDensity,
+    emotional_valence: profile.emotionalValence,
+    coherence: profile.coherence,
+    total_words: profile.totalWords,
+    unique_words: profile.uniqueWords,
+    filler_count: profile.fillerCount,
+    summary: profile.summary,
+  });
+  if (error) throw error;
+}
+
+export async function getCognitiveProfile(sessionId: string) {
+  const { data, error } = await supabase
+    .from("cognitive_profiles")
+    .select("*")
+    .eq("session_id", sessionId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getAllCognitiveProfiles() {
+  const { data, error } = await supabase
+    .from("cognitive_profiles")
+    .select("*, sessions(started_at, memories(title))")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
 // --------------- Patient operations ---------------
 
 export async function getPatient(patientId: string = "default") {

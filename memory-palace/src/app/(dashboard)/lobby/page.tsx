@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import MemoryLobbyScene from "@/components/lobby/MemoryLobbyScene";
 import { getAllMemories } from "@/lib/db";
 import { mapMemoryRecord } from "@/lib/memory-mappers";
