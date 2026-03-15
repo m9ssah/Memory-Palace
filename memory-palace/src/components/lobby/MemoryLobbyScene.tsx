@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import type { Memory } from "@/types";
 
 type LobbySceneProps = {
@@ -134,6 +135,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
   const [selectedMemory, setSelectedMemory] = useState<LobbyMemory | null>(null);
   const [hoveredMemory, setHoveredMemory] = useState<LobbyMemory | null>(null);
   const [isEntering, setIsEntering] = useState(false);
+  const { triggerFade, FadeOverlay } = useFadeTransition();
 
   const lobbyMemories = useMemo<LobbyMemory[]>(() => {
     if (memories.length === 0) return FALLBACK_MEMORIES;
@@ -881,9 +883,9 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
               onClick={() => {
                 if (!selectedMemory) return;
                 setIsEntering(true);
-                window.setTimeout(() => {
+                triggerFade(() => {
                   router.push(`/viewer/${selectedMemory.id}`);
-                }, 400);
+                }, 600);
               }}
               className="rounded-md border border-purple-400/50 bg-purple-700/25 px-6 py-2.5 text-[14px] tracking-[0.05em] text-purple-100 transition-colors hover:bg-purple-700/40 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -902,6 +904,8 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
           {isEntering ? <div className="mt-3 text-[13px] text-purple-300/45">Loading your world...</div> : null}
         </div>
       </div>
+
+      <FadeOverlay durationMs={600} />
     </div>
   );
 }

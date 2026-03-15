@@ -15,6 +15,7 @@ export interface Memory {
   description?: string;
   imageUrl?: string;
   imagePath?: string;
+  splatUrl?: string | null;
   worldId?: number;
   tags?: string;
   createdAt: string;
