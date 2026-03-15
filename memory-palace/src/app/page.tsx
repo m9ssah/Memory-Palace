@@ -160,10 +160,14 @@ export default function LandingPage() {
             strokeLinejoin="round"
             className="text-palace-primary"
           >
-            <path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5-3 6.5V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.5C6.5 14 5 12 5 9a7 7 0 0 1 7-7z" />
-            <path d="M9 22h6" />
-            <path d="M10 18v4" />
-            <path d="M14 18v4" />
+            <path d="M9.5 2a3.5 3.5 0 0 0-3.2 4.8A3.5 3.5 0 0 0 4 10.5a3.5 3.5 0 0 0 1.7 3A3.5 3.5 0 0 0 8 18h1.5" />
+            <path d="M14.5 2a3.5 3.5 0 0 1 3.2 4.8A3.5 3.5 0 0 1 20 10.5a3.5 3.5 0 0 1-1.7 3A3.5 3.5 0 0 1 16 18h-1.5" />
+            <path d="M12 2v16" />
+            <path d="M8 8h3" />
+            <path d="M13 8h3" />
+            <path d="M7 12h4" />
+            <path d="M13 12h4" />
+            <path d="M9 18a3 3 0 0 0 6 0" />
           </svg>
         </div>
 
