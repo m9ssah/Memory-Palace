@@ -39,6 +39,33 @@ export async function getMemory(memoryId: string) {
   return data;
 }
 
+export async function getMemoryAnnotationBySessionId(sessionId: string) {
+  try {
+    // Get session to find memory_id
+    const { data: session, error: sessionError } = await supabase
+      .from("sessions")
+      .select("memory_id")
+      .eq("id", sessionId)
+      .single();
+    
+    if (sessionError || !session) return null;
+
+    // Get memory annotation
+    const { data: memory, error: memoryError } = await supabase
+      .from("memories")
+      .select("title, annotation")
+      .eq("id", session.memory_id)
+      .single();
+    
+    if (memoryError || !memory) return null;
+
+    return memory;
+  } catch (error) {
+    console.error("Error fetching memory annotation by sessionId:", error);
+    return null;
+  }
+}
+
 export async function getAllMemories() {
   const { data, error } = await supabase
     .from("memories")
@@ -226,6 +253,112 @@ export async function updateSessionEngagement(sessionId: string, score: number, 
 
 export async function getPatient(patientId: string = "default") {
   const { data, error } = await supabase.from("patients").select("*").eq("id", patientId).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// --------------- AI Conversation operations ---------------
+
+export async function createAIConversation(
+  id: string,
+  title: string,
+  systemPrompt: string,
+  context?: string,
+  sessionId?: string,
+  patientId?: string,
+  model: string = "gpt-4o-mini",
+  temperature: number = 0.7,
+  maxTokens: number = 1000,
+) {
+  const { error } = await supabase.from("ai_conversations").insert({
+    id,
+    title,
+    system_prompt: systemPrompt,
+    context: context ?? null,
+    session_id: sessionId ?? null,
+    patient_id: patientId ?? null,
+    model,
+    temperature,
+    max_tokens: maxTokens,
+    status: "active",
+  });
+  if (error) throw error;
+}
+
+export async function getAIConversation(conversationId: string) {
+  const { data, error } = await supabase
+    .from("ai_conversations")
+    .select("*")
+    .eq("id", conversationId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getAIConversationWithMessages(conversationId: string) {
+  const { data, error } = await supabase
+    .from("ai_conversations")
+    .select(
+      `
+      *,
+      ai_messages (*)
+    `,
+    )
+    .eq("id", conversationId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getAllAIConversations(patientId?: string) {
+  let query = supabase.from("ai_conversations").select("*").order("created_at", { ascending: false });
+
+  if (patientId) {
+    query = query.eq("patient_id", patientId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
+
+export async function updateAIConversationStatus(conversationId: string, status: "active" | "ended" | "paused") {
+  const { error } = await supabase
+    .from("ai_conversations")
+    .update({
+      status,
+      ended_at: status === "ended" ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", conversationId);
+  if (error) throw error;
+}
+
+export async function addAIMessage(
+  conversationId: string,
+  messageId: string,
+  role: "user" | "assistant" | "system",
+  content: string,
+  tokensUsed?: number,
+  audioUrl?: string,
+) {
+  const { error } = await supabase.from("ai_messages").insert({
+    id: messageId,
+    conversation_id: conversationId,
+    role,
+    content,
+    tokens_used: tokensUsed ?? null,
+    audio_url: audioUrl ?? null,
+  });
+  if (error) throw error;
+}
+
+export async function getAIMessages(conversationId: string) {
+  const { data, error } = await supabase
+    .from("ai_messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true });
   if (error) throw error;
   return data;
 }

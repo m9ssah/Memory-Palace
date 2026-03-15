@@ -88,3 +88,42 @@ export interface PatientStats {
   engagementOverTime: { date: string; score: number }[];
   sessionFrequency: { week: string; count: number; avgDuration: number }[];
 }
+
+export interface AIMessage {
+  id: string;
+  conversationId: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  tokensUsed?: number;
+  audioUrl?: string;
+  createdAt: string;
+}
+
+export interface AIConversation {
+  id: string;
+  sessionId?: string;
+  patientId?: string;
+  title: string;
+  systemPrompt: string;
+  context?: string;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  status: "active" | "ended" | "paused";
+  startedAt: string;
+  endedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  messages?: AIMessage[];
+}
+
+export interface ConversationConfig {
+  title: string;
+  systemPrompt: string;
+  context?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  sessionId?: string;
+  patientId?: string;
+}
