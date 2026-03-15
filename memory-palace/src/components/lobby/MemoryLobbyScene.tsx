@@ -49,71 +49,78 @@ function makeDoorLabel(memory: LobbyMemory) {
     return new THREE.CanvasTexture(canvas);
   }
 
-  ctx.fillStyle = memory.hue;
+  ctx.fillStyle = "#1A1234";
   ctx.fillRect(0, 0, 512, 768);
 
-  const dark = ctx.createLinearGradient(0, 0, 0, 768);
-  dark.addColorStop(0, "rgba(0,0,0,0.5)");
-  dark.addColorStop(0.4, "rgba(0,0,0,0.25)");
-  dark.addColorStop(1, "rgba(0,0,0,0.6)");
-  ctx.fillStyle = dark;
+  const wash = ctx.createLinearGradient(0, 0, 0, 768);
+  wash.addColorStop(0, `${memory.hue}40`);
+  wash.addColorStop(0.5, `${memory.hue}18`);
+  wash.addColorStop(1, "#00000055");
+  ctx.fillStyle = wash;
   ctx.fillRect(0, 0, 512, 768);
 
-  const px = 80;
-  const py = 80;
-  const pw = 352;
-  const ph = 350;
-  ctx.strokeStyle = "rgba(255,255,255,0.25)";
+  const px = 72;
+  const py = 70;
+  const pw = 368;
+  const ph = 360;
+  ctx.strokeStyle = "rgba(180,150,255,0.2)";
   ctx.lineWidth = 2;
   ctx.strokeRect(px, py, pw, ph);
-  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  ctx.fillStyle = "rgba(90,60,160,0.1)";
   ctx.fillRect(px, py, pw, ph);
 
   const cx = px + pw / 2;
   const cy = py + ph / 2;
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillStyle = "rgba(180,150,255,0.16)";
   ctx.beginPath();
   ctx.arc(cx, cy, 44, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.strokeStyle = "rgba(180,150,255,0.42)";
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.arc(cx, cy, 28, 0, Math.PI * 2);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.fillStyle = "rgba(180,150,255,0.42)";
   ctx.beginPath();
   ctx.arc(cx, cy - 14, 8, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  ctx.fillStyle = "rgba(180,150,255,0.26)";
   ctx.fillRect(cx - 26, cy + 8, 52, 6);
 
-  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  const accent = ctx.createLinearGradient(72, 0, 440, 0);
+  accent.addColorStop(0, "rgba(180,150,255,0)");
+  accent.addColorStop(0.5, "rgba(180,150,255,0.28)");
+  accent.addColorStop(1, "rgba(180,150,255,0)");
+  ctx.strokeStyle = accent;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(80, 460);
-  ctx.lineTo(432, 460);
+  ctx.moveTo(72, 460);
+  ctx.lineTo(440, 460);
   ctx.stroke();
 
-  ctx.fillStyle = "rgba(255,255,255,0.95)";
-  ctx.font = "bold 52px Georgia, serif";
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = "rgba(245,236,255,1)";
+  ctx.font = "bold 50px Georgia, serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
   const words = memory.title.split(" ");
   if (words.length > 2 && memory.title.length > 16) {
     const mid = Math.ceil(words.length / 2);
-    ctx.fillText(words.slice(0, mid).join(" "), 256, 530);
-    ctx.fillText(words.slice(mid).join(" "), 256, 595);
+    ctx.fillText(words.slice(0, mid).join(" "), 256, 528);
+    ctx.fillText(words.slice(mid).join(" "), 256, 592);
   } else {
-    ctx.fillText(memory.title, 256, 560);
+    ctx.fillText(memory.title, 256, 558);
   }
 
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.font = "30px Georgia, serif";
-  ctx.fillText(memory.year, 256, 680);
+  ctx.fillStyle = "rgba(210,185,255,0.82)";
+  ctx.font = "28px Georgia, serif";
+  ctx.fillText(memory.year, 256, 678);
+  ctx.shadowBlur = 0;
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;
@@ -160,13 +167,14 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.6;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMappingExposure = 1.5;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a0800);
-    scene.fog = new THREE.FogExp2(0x1a0800, 0.06);
+    scene.background = new THREE.Color(0x1A0F2E);
+    scene.fog = new THREE.FogExp2(0x180D2A, 0.035);
 
     const camera = new THREE.PerspectiveCamera(72, 1, 0.05, 60);
     camera.position.set(0, 1.65, 0);
@@ -178,10 +186,13 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     const halfW = roomW / 2;
     const halfD = roomD / 2;
 
-    const standardMat = (color: number, roughness = 0.95, emissive = 0x000000, emissiveIntensity = 0) =>
+    const standardMat = (color: number, roughness = 0.82, emissive = 0x000000, emissiveIntensity = 0) =>
       new THREE.MeshStandardMaterial({ color, roughness, metalness: 0, emissive, emissiveIntensity });
 
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD, 8, 8), standardMat(0x514944, 0.97));
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(roomW, roomD, 8, 8),
+      standardMat(0x1A1434, 0.86, 0x090512, 0.06),
+    );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
@@ -189,14 +200,20 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     for (let i = -5; i <= 5; i += 1) {
       const plank = new THREE.Mesh(
         new THREE.PlaneGeometry(0.14, roomD),
-        new THREE.MeshStandardMaterial({ color: 0x3B3937, roughness: 0.25 }),
+        new THREE.MeshStandardMaterial({
+          color: 0x261E46,
+          roughness: 0.66,
+          metalness: 0.02,
+          emissive: 0x0B0715,
+          emissiveIntensity: 0.04,
+        }),
       );
       plank.rotation.x = -Math.PI / 2;
       plank.position.set(i * 1.1, 0.005, 0);
       scene.add(plank);
     }
 
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), standardMat(0xffffff, 0.9));
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomD), standardMat(0x241f3b, 1));
     ceiling.rotation.x = Math.PI / 2;
     ceiling.position.y = roomH;
     scene.add(ceiling);
@@ -209,14 +226,31 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
     ];
 
     for (const wallDef of wallDirs) {
-      const wall = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomH), standardMat(0x313d5a, 0.95));
+      const wall = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomW, roomH),
+        standardMat(0x76679e, 0.72, 0x1A0D34, .25),
+      );
       wall.position.set(wallDef.pos[0], wallDef.pos[1], wallDef.pos[2]);
       wall.rotation.y = wallDef.ry;
       wall.receiveShadow = true;
       scene.add(wall);
     }
 
-    const trimMaterial = standardMat(0xd1ced9, 0.85);
+    for (const wallDef of wallDirs) {
+      for (let panelIndex = -1; panelIndex <= 1; panelIndex += 1) {
+        const panel = new THREE.Mesh(
+          new THREE.BoxGeometry(2.5, 1.0, 0.04),
+          standardMat(0x45336F, 0.62, 0x120922, 0.05),
+        );
+        const offsetX = wallDef.ry === 0 || wallDef.ry === Math.PI ? panelIndex * 3.4 : 0;
+        const offsetZ = Math.abs(wallDef.ry) === Math.PI / 2 ? panelIndex * 3.4 : 0;
+        panel.position.set(wallDef.pos[0] + offsetX, 0.62, wallDef.pos[2] + offsetZ);
+        panel.rotation.y = wallDef.ry;
+        scene.add(panel);
+      }
+    }
+
+    const trimMaterial = standardMat(0x4a3d6b, 0.45, 0x382757, 0.08);
     for (const wallDef of wallDirs) {
       const base = new THREE.Mesh(new THREE.BoxGeometry(roomW, 0.18, 0.06), trimMaterial);
       base.position.set(wallDef.pos[0], 0.09, wallDef.pos[2]);
@@ -229,54 +263,117 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       scene.add(crown);
     }
 
-    const rugBorder = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6), standardMat(0x2e2050, 0.98));
+    const rugBorder = new THREE.Mesh(
+      new THREE.PlaneGeometry(4.8, 4.8),
+      standardMat(0x6C1F66, .97 , 0x2D082A, 0.07),
+    );
     rugBorder.rotation.x = -Math.PI / 2;
     rugBorder.position.set(0, 0.010, 0);
     scene.add(rugBorder);
 
-    const rug = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), standardMat(0x7A43FC, 0.99));
+    const rug = new THREE.Mesh(
+      new THREE.PlaneGeometry(4.3, 4.3),
+      standardMat(0x4F124D, 0.74, 0x26051E, 0.08),
+    );
     rug.rotation.x = -Math.PI / 2;
     rug.position.set(0, 0.018, 0);
     scene.add(rug);
 
-    const diamond = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), standardMat(0x5438a0, 0.99));
+    const diamond = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.0, 2.0),
+      new THREE.MeshStandardMaterial({
+        color: 0xF1D6FF,
+        roughness: 0.65,
+        metalness: 0,
+        emissive: 0xA060CC,
+        emissiveIntensity: 0.28,
+      }),
+    );
     diamond.rotation.x = -Math.PI / 2;
     diamond.rotation.z = Math.PI / 4;
     diamond.position.set(0, 0.026, 0);
     scene.add(diamond);
 
-    scene.add(new THREE.AmbientLight(0xF3CFA5, 0.55));
-    scene.add(new THREE.HemisphereLight(0xF2A5A5, 0x0d0820, 0.55));
+    scene.add(new THREE.AmbientLight(0x3B2862, 1.05));
+    scene.add(new THREE.HemisphereLight(0x705CB2, 0x1A1230, 0.9));
 
-    const pendantLight = new THREE.PointLight(0x953030, 3.5, 16);
+    const pendantLight = new THREE.PointLight(0x7A6FD4, 1.35, 14.5);
     pendantLight.position.set(0, roomH - 0.35, 0);
     pendantLight.castShadow = true;
     pendantLight.shadow.mapSize.set(512, 512);
     scene.add(pendantLight);
 
-    const lampShade = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.04, 0.22, 0.28, 10),
-      new THREE.MeshStandardMaterial({
-        color: 0xD7811D,
-        emissive: 0xB46B18,
-        emissiveIntensity: .3,
-        side: THREE.DoubleSide,
-      }),
-    );
-    lampShade.position.set(0, roomH - 0.5, 0);
-    scene.add(lampShade);
+    const frontFill = new THREE.PointLight(0xFFD5AA, 1.1, 18);
+    frontFill.position.set(0, 2.5, 3.2);
+    scene.add(frontFill);
 
-    const cord = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.006, 0.006, 0.45),
-      new THREE.MeshStandardMaterial({ color: 0x1a1a1a }),
+    const rugGlow = new THREE.PointLight(0xA87AE4, 0.7, 6.3);
+    rugGlow.position.set(0, 1.2, 0);
+    scene.add(rugGlow);
+
+    const centerWarmFill = new THREE.PointLight(0xFFBF8A, 0.58, 10);
+    centerWarmFill.position.set(0, 2.0, 0.8);
+    scene.add(centerWarmFill);
+
+    const chandelierMaterial = new THREE.MeshStandardMaterial({
+      color: 0x24193F,
+      roughness: 0.4,
+      metalness: 0.82,
+    });
+    const chandelierBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.055, 0.13, 0.24, 8),
+      chandelierMaterial,
     );
-    cord.position.set(0, roomH - 0.18, 0);
-    scene.add(cord);
+    chandelierBase.position.set(0, roomH - 0.38, 0);
+    scene.add(chandelierBase);
+
+    const chandelierCord = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.007, 0.007, 0.38, 6),
+      chandelierMaterial,
+    );
+    chandelierCord.position.set(0, roomH - 0.18, 0);
+    scene.add(chandelierCord);
+
+    for (let armIndex = 0; armIndex < 4; armIndex += 1) {
+      const angle = armIndex * (Math.PI / 2);
+      const arm = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.012, 0.012, 0.5, 6),
+        chandelierMaterial,
+      );
+      arm.rotation.z = Math.PI / 2;
+      arm.rotation.y = angle;
+      arm.position.set(Math.cos(angle) * 0.28, roomH - 0.48, Math.sin(angle) * 0.28);
+      scene.add(arm);
+
+      const bulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.04, 8, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0xA38BE8,
+          emissive: 0x7662CC,
+          emissiveIntensity: 1,
+        }),
+      );
+      bulb.position.set(Math.cos(angle) * 0.52, roomH - 0.52, Math.sin(angle) * 0.52);
+      scene.add(bulb);
+    }
+
+    const tableLight = new THREE.PointLight(0xFFB05A, 6.2, 10);
+    tableLight.position.set(-4.2, 1.38, -4.0);
+    tableLight.castShadow = true;
+    scene.add(tableLight);
+
+    const lampFill = new THREE.PointLight(0xFF8A32, 1.33, 4.5);
+    lampFill.position.set(-4.4, 0.8, -4.3);
+    scene.add(lampFill);
+
+    const windowGlow = new THREE.PointLight(0xDE9CF4, 0.82, 8.2);
+    windowGlow.position.set(0, 2.4, -5.5);
+    scene.add(windowGlow);
 
     const doorLights = lobbyMemories.map((memory, index) => {
       const slot = DOOR_SLOTS[index];
-      const light = new THREE.PointLight(memory.light, 0.5, 6);
-      light.position.set(slot.pos[0] * 0.65, 1.8, slot.pos[1] * 0.65);
+      const light = new THREE.PointLight(memory.light, 0.1,);
+      light.position.set(slot.pos[0] * 0.66, 1.8, slot.pos[1] * 0.6);
       scene.add(light);
       return light;
     });
@@ -303,11 +400,11 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       group.rotation.y = slot.ry;
 
       const frameMat = new THREE.MeshStandardMaterial({
-        color: 0x3d2a72,
-        roughness: 0.55,
-        metalness: 0.05,
-        emissive: 0x2a186e,
-        emissiveIntensity: 0.15,
+        color: 0x241A48,
+        roughness: 0.62,
+        metalness: 0.08,
+        emissive: 0x120830,
+        emissiveIntensity: 0.22,
       });
 
       const frameParts = [
@@ -326,10 +423,10 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
 
       const panelMat = new THREE.MeshStandardMaterial({
         map: makeDoorLabel(memory),
-        roughness: 0.85,
+        roughness: .85,
         metalness: 0,
         emissive: new THREE.Color(memory.hue),
-        emissiveIntensity: 0.06,
+        emissiveIntensity: 0.16,
       });
 
       const panel = new THREE.Mesh(new THREE.PlaneGeometry(doorWidth, doorHeight), panelMat) as typeof doorMeshes[number];
@@ -338,7 +435,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       const transomMat = new THREE.MeshBasicMaterial({
         color: new THREE.Color(memory.hue),
         transparent: true,
-        opacity: 0.18,
+        opacity: 0.2,
       });
       const transom = new THREE.Mesh(new THREE.PlaneGeometry(doorWidth, 0.45), transomMat);
       transom.position.set(0, doorHeight + frameThickness + 0.225, 0.02);
@@ -363,7 +460,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       group.add(panel);
       doorMeshes.push(panel);
 
-      const knobMat = new THREE.MeshStandardMaterial({ color: 0x9a7afc, roughness: 0.2, metalness: 0.85 });
+      const knobMat = new THREE.MeshStandardMaterial({ color: 0xB090D0, roughness: 0.1184, metalness: 0.95 });
       const knob = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 12), knobMat);
       knob.position.set(0.72, doorHeight / 2, 0.12);
       group.add(knob);
@@ -375,58 +472,121 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       scene.add(group);
     });
 
-    const tableTop = new THREE.Mesh(
-      new THREE.BoxGeometry(1.4, 0.05, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0x2e2060, roughness: 0.7, metalness: 0.05 }),
+    const sideTable = new THREE.Mesh(
+      new THREE.BoxGeometry(0.72, 0.74, 0.72),
+      new THREE.MeshStandardMaterial({ color: 0x2E214F, roughness: 0.54, emissive: 0x120922, emissiveIntensity: 0.05 }),
     );
-    tableTop.position.set(4, 0.78, 4);
-    tableTop.castShadow = true;
-    scene.add(tableTop);
+    sideTable.position.set(-4.2, 0.37, -4.0);
+    scene.add(sideTable);
 
-    [
-      [4.5, 0, 4.15],
-      [3.5, 0, 4.15],
-      [4.5, 0, 3.85],
-      [3.5, 0, 3.85],
-    ].forEach((legPos) => {
-      const leg = new THREE.Mesh(
-        new THREE.BoxGeometry(0.06, 0.76, 0.06),
-        new THREE.MeshStandardMaterial({ color: 0x231848, roughness: 0.8 }),
-      );
-      leg.position.set(legPos[0], 0.38, legPos[2]);
-      scene.add(leg);
-    });
-
-    const vase = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.06, 0.1, 0.28, 10),
-      new THREE.MeshStandardMaterial({ color: 0x5F5C90, roughness: 0.3, metalness: 0.1 }),
+    const lampBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.12, 0.32, 10),
+      new THREE.MeshStandardMaterial({ color: 0x8665BA, roughness: 0.24 }),
     );
-    vase.position.set(4.1, 0.95, 4);
-    scene.add(vase);
-
-    const lampBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.04, 0.09, 0.3, 8),
-      new THREE.MeshStandardMaterial({ color: 0x9a7afc, roughness: 0.4, metalness: 0.6 }),
-    );
-    lampBase.position.set(3.8, 0.93, 4);
-    scene.add(lampBase);
+    lampBody.position.set(-4.2, 0.9, -4.0);
+    scene.add(lampBody);
 
     const tableLampShade = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.05, 0.18, 0.22, 8),
+      new THREE.CylinderGeometry(0.065, 0.22, 0.27, 10),
       new THREE.MeshStandardMaterial({
-        color: 0xf5e0b0,
-        roughness: 0.9,
-        emissive: 0xffaa44,
-        emissiveIntensity: 0.6,
+        color: 0xF4D9A3,
+        roughness: 0.54,
+        emissive: 0xFF9040,
+        emissiveIntensity: 1.45,
         side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.94,
       }),
     );
-    tableLampShade.position.set(3.8, 1.22, 4);
+    tableLampShade.position.set(-4.2, 1.26, -4.0);
     scene.add(tableLampShade);
 
-    const tableLight = new THREE.PointLight(0x9A6450, 1.4, 5);
-    tableLight.position.set(3.8, 1.3, 4);
-    scene.add(tableLight);
+    const photoFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(0.28, 0.36, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0x5B4196, roughness: 0.24, metalness: 0.42 }),
+    );
+    photoFrame.position.set(-4.2, 0.92, -4.34);
+    scene.add(photoFrame);
+
+    const photoInset = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.2, 0.28),
+      new THREE.MeshBasicMaterial({ color: 0x8060A0, transparent: true, opacity: 0.48 }),
+    );
+    photoInset.position.set(-4.2, 0.92, -4.31);
+    scene.add(photoInset);
+
+    const dresser = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.92, 0.56),
+      new THREE.MeshStandardMaterial({ color: 0x34255A, roughness: 0.58, emissive: 0x140C24, emissiveIntensity: 0.04 }),
+    );
+    dresser.position.set(-4.5, 0.46, -4.4);
+    scene.add(dresser);
+
+    [0.25, -0.22].forEach((offsetY) => {
+      const drawer = new THREE.Mesh(
+        new THREE.BoxGeometry(1.0, 0.33, 0.04),
+        new THREE.MeshStandardMaterial({ color: 0x46336F, roughness: 0.48, emissive: 0x1A102A, emissiveIntensity: 0.03 }),
+      );
+      drawer.position.set(-4.5, 0.46 + offsetY, -4.16);
+      scene.add(drawer);
+
+      const knob = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xB090D0, roughness: 0.2, metalness: 0.7 }),
+      );
+      knob.position.set(-4.5, 0.46 + offsetY, -4.12);
+      scene.add(knob);
+    });
+
+    const windowFrameMaterial = new THREE.MeshStandardMaterial({ color: 0x2A1D4D, roughness: 0.4, emissive: 0x100818, emissiveIntensity: 0.05 });
+    const windowOuter = new THREE.Mesh(new THREE.BoxGeometry(2.3, 2.9, 0.09), windowFrameMaterial);
+    windowOuter.position.set(0, 2.15, -5.85);
+    scene.add(windowOuter);
+
+    const windowPane = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.85, 2.45),
+      new THREE.MeshBasicMaterial({ color: 0xE8A0FF, transparent: true, opacity: 0.32 }),
+    );
+    windowPane.position.set(0, 2.15, -5.82);
+    scene.add(windowPane);
+
+    [-1.42, 1.42].forEach((x) => {
+      const curtain = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.92, 3.2),
+        new THREE.MeshStandardMaterial({
+          color: 0x46306F,
+          roughness: 0.82,
+          side: THREE.DoubleSide,
+          emissive: 0x241040,
+          emissiveIntensity: 0.18,
+        }),
+      );
+      curtain.position.set(x, 2.25, -5.78);
+      scene.add(curtain);
+    });
+
+    const armoire = new THREE.Mesh(
+      new THREE.BoxGeometry(1.55, 2.95, 0.68),
+      new THREE.MeshStandardMaterial({ color: 0x38285E, roughness: 0.54, emissive: 0x140C24, emissiveIntensity: 0.04 }),
+    );
+    armoire.position.set(4.6, 1.475, -4.5);
+    scene.add(armoire);
+
+    [-0.39, 0.39].forEach((offsetX) => {
+      const door = new THREE.Mesh(
+        new THREE.BoxGeometry(0.68, 2.52, 0.045),
+        new THREE.MeshStandardMaterial({ color: 0x4A3677, roughness: 0.44, emissive: 0x1A102A, emissiveIntensity: 0.04 }),
+      );
+      door.position.set(4.6 + offsetX, 1.475, -4.18);
+      scene.add(door);
+
+      const knob = new THREE.Mesh(
+        new THREE.SphereGeometry(0.038, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xC0A0E0, roughness: 0.18, metalness: 0.75 }),
+      );
+      knob.position.set(4.6 + offsetX * 0.48, 1.475, -4.14);
+      scene.add(knob);
+    });
 
     const dustCount = 80;
     const dustPositions = new Float32Array(dustCount * 3);
@@ -490,16 +650,16 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
         hoveredDoor.material.emissiveIntensity = 0.06;
         hoveredDoor.userData.glowMat.opacity = 0;
         hoveredDoor.userData.transomMat.opacity = 0.18;
-        doorLights[hoveredDoor.userData.doorLightIndex].intensity = 0.5;
+        doorLights[hoveredDoor.userData.doorLightIndex].intensity = 0.22;
       }
 
       hoveredDoor = nextHovered;
 
       if (hoveredDoor) {
-        hoveredDoor.material.emissiveIntensity = 0.3;
-        hoveredDoor.userData.glowMat.opacity = 0.14;
-        hoveredDoor.userData.transomMat.opacity = 0.35;
-        doorLights[hoveredDoor.userData.doorLightIndex].intensity = 1.8;
+        hoveredDoor.material.emissiveIntensity = 0.2;
+        hoveredDoor.userData.glowMat.opacity = 0.06;
+        hoveredDoor.userData.transomMat.opacity = 0.2;
+        doorLights[hoveredDoor.userData.doorLightIndex].intensity = 0.34;
         canvas.style.cursor = "pointer";
         setHoveredMemory(hoveredDoor.userData.memory);
       } else {
@@ -587,8 +747,12 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
         camera.position.y = 1.65;
       }
 
-      pendantLight.intensity = 7 + Math.sin(clock * 0.6) * 0.15 + Math.sin(clock * 2.1) * 0.08;
-      tableLight.intensity = 20 + Math.sin(clock * 1.4) * 0.1;
+      pendantLight.intensity = 3.35 + Math.sin(clock * 0.65) * 0.06 + Math.sin(clock * 2.2) * 0.03;
+      rugGlow.intensity = 0.7 + Math.sin(clock * 0.44) * 0.045;
+      const warmFlicker = 6.2 + Math.sin(clock * 1.05) * 0.24 + Math.sin(clock * 2.7) * 0.11;
+      tableLight.intensity = warmFlicker;
+      lampFill.intensity = 1.3 + Math.sin(clock * 1.05) * 0.1 + Math.sin(clock * 2.7) * 0.04;
+      windowGlow.intensity = 0.9 + Math.sin(clock * 0.19) * 0.08;
 
       const positions = dustGeo.attributes.position.array as Float32Array;
       for (let i = 0; i < dustCount; i += 1) {
