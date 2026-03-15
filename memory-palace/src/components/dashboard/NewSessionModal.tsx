@@ -155,7 +155,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
     } finally {
       setLoading(false);
     }
-  }, [preview, fileName, handleClose, router]);
+  }, [preview, fileName, annotation, handleClose, router]);
 
   return (
     <Modal open={open} onClose={handleClose}>
