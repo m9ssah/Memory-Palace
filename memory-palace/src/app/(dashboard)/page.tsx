@@ -27,7 +27,7 @@ export default function DashboardPage() {
         .from("patients")
         .select("name")
         .eq("id", "default")
-        .single();
+        .maybeSingle();
       if (patient?.name) setPatientName(patient.name);
 
       // fetch most recent session with memory title

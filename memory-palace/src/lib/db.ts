@@ -30,7 +30,7 @@ export async function createMemory(
 export async function getMemory(memoryId: string) {
   const { data, error } = await supabase
     .from("memories")
-    .select("*, worlds!worlds_memory_id_fkey(api_world_id, marble_url)")
+    .select("*, worlds!fk_memories_world(api_world_id, marble_url, splats_urls)")
     .eq("id", memoryId)
     .single();
   if (error) throw error;
@@ -40,7 +40,7 @@ export async function getMemory(memoryId: string) {
 export async function getAllMemories() {
   const { data, error } = await supabase
     .from("memories")
-    .select("*, worlds!worlds_memory_id_fkey(api_world_id, marble_url)")
+    .select("*, worlds!fk_memories_world(api_world_id, marble_url, splats_urls)")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
@@ -223,7 +223,7 @@ export async function updateSessionEngagement(sessionId: string, score: number, 
 // --------------- Patient operations ---------------
 
 export async function getPatient(patientId: string = "default") {
-  const { data, error } = await supabase.from("patients").select("*").eq("id", patientId).single();
+  const { data, error } = await supabase.from("patients").select("*").eq("id", patientId).maybeSingle();
   if (error) throw error;
   return data;
 }
