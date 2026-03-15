@@ -1,9 +1,21 @@
 import OpenAI from "openai";
-import { AIMessage } from "@/types";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "Missing OpenAI credentials. Set OPENAI_API_KEY before calling conversation APIs.",
+    );
+  }
+
+  if (!openaiClient) {
+    openaiClient = new OpenAI({ apiKey });
+  }
+
+  return openaiClient;
+}
 
 export interface ConversationAgentConfig {
   systemPrompt: string;
@@ -90,6 +102,8 @@ export class ConversationAgent {
     totalTokens?: number;
   }> {
     try {
+      const openai = getOpenAIClient();
+
       // Add user message to history
       this.addMessage("user", userMessage);
 
@@ -98,7 +112,7 @@ export class ConversationAgent {
         model: this.model,
         messages: this.messageHistory as any,
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
+        max_completion_tokens: this.maxTokens,
       });
 
       // Extract assistant response
@@ -128,6 +142,7 @@ export class ConversationAgent {
    */
   async transcribeAudio(audioBuffer: Buffer): Promise<string> {
     try {
+      const openai = getOpenAIClient();
       const uint8Array = new Uint8Array(audioBuffer);
       const response = await openai.audio.transcriptions.create({
         file: new File([uint8Array], "audio.wav", { type: "audio/wav" }),
@@ -151,6 +166,7 @@ export class ConversationAgent {
     voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer" = "nova",
   ): Promise<ArrayBuffer> {
     try {
+      const openai = getOpenAIClient();
       const response = await openai.audio.speech.create({
         model: "tts-1",
         voice: voice,

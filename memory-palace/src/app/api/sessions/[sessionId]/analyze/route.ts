@@ -14,49 +14,53 @@ export async function POST(
       return NextResponse.json({ error: "transcript is required" }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY || "test";
-    const apiBase = process.env.HF_ENDPOINT_URL || "https://qyt7893blb71b5d3.us-east-2.aws.endpoints.huggingface.cloud/v1";
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "OPENAI_API_KEY is not configured" },
+        { status: 503 },
+      );
+    }
 
-    const systemPrompt = `You are a clinical speech analyst specializing in cognitive assessment for dementia patients. Analyze the following speech transcript and return a JSON object with these fields:
+    const systemPrompt = `You are a clinical speech analyst specializing in cognitive assessment for dementia patients. Analyze the following conversation transcript between a patient and their memory companion. Return a JSON object with these fields:
 
-- wordFindingDifficulty (0-100): Higher = more difficulty. Look for pauses, filler words, circumlocution, word substitutions.
-- vocabularyRichness (0-100): Higher = richer vocabulary. Measure type-token ratio, word sophistication, variety.
-- informationDensity (0-100): Higher = more information per utterance. Ratio of content words to total words.
-- emotionalValence (0-100): 0 = very negative, 50 = neutral, 100 = very positive. Overall emotional tone.
-- coherence (0-100): Higher = more coherent. Measure topic maintenance, logical flow, sentence completion.
-- totalWords (integer): Total word count.
-- uniqueWords (integer): Number of distinct words used.
-- fillerCount (integer): Count of filler words (um, uh, like, you know, etc.).
-- summary (string): 2-3 sentence clinical summary of the speech patterns observed.
+- wordFindingDifficulty (0-100): Higher = more difficulty. Look for pauses, filler words, circumlocution, word substitutions in the PATIENT's speech only.
+- vocabularyRichness (0-100): Higher = richer vocabulary. Measure type-token ratio, word sophistication, variety in the PATIENT's speech only.
+- informationDensity (0-100): Higher = more information per utterance. Ratio of content words to total words in the PATIENT's speech.
+- emotionalValence (0-100): 0 = very negative, 50 = neutral, 100 = very positive. Overall emotional tone of the PATIENT.
+- coherence (0-100): Higher = more coherent. Measure topic maintenance, logical flow, sentence completion in the PATIENT's speech.
+- totalWords (integer): Total word count of the PATIENT's speech only.
+- uniqueWords (integer): Number of distinct words used by the PATIENT.
+- fillerCount (integer): Count of filler words (um, uh, like, you know, etc.) in the PATIENT's speech.
+- summary (string): 2-3 sentence clinical summary of the patient's speech patterns and emotional state observed during this session.
 
 Return ONLY valid JSON, no markdown or explanation.`;
 
-    const llmRes = await fetch(`${apiBase}/chat/completions`, {
+    const llmRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: transcript },
         ],
         temperature: 0.3,
-        max_tokens: 1024,
+        max_completion_tokens: 1024,
       }),
     });
 
     if (!llmRes.ok) {
       const errText = await llmRes.text();
-      console.error("LLM API error:", errText);
-      return NextResponse.json({ error: "LLM analysis failed" }, { status: 502 });
+      console.error("OpenAI API error:", errText);
+      return NextResponse.json({ error: "Speech analysis failed" }, { status: 502 });
     }
 
     const llmData = await llmRes.json();
     const rawContent = llmData.choices[0].message.content;
-    // Extract JSON 
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.error("Failed to parse LLM response as JSON:", rawContent);

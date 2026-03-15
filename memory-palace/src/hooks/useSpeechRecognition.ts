@@ -78,6 +78,8 @@ export function useSpeechRecognition() {
     setIsRecording(false);
   }, []);
 
+  const resetTranscript = useCallback(() => setTranscript(""), []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -90,5 +92,5 @@ export function useSpeechRecognition() {
     };
   }, []);
 
-  return { isRecording, isSupported, transcript, startRecording, stopRecording };
+  return { isRecording, isSupported, transcript, startRecording, stopRecording, resetTranscript };
 }

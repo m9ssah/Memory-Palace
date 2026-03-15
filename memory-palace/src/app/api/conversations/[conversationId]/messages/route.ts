@@ -19,6 +19,17 @@ export async function POST(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        {
+          error: "OpenAI API key is not configured",
+          details:
+            "Set OPENAI_API_KEY in your environment (for local dev: .env.local) and restart the Next.js server.",
+        },
+        { status: 503 }
+      );
+    }
+
     const { conversationId } = await params;
     const body = await request.json();
     const { userMessage } = body;
@@ -97,6 +108,18 @@ export async function POST(
     console.error("Error processing message:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
+
+    if (errorMessage.includes("Missing OpenAI credentials")) {
+      return NextResponse.json(
+        {
+          error: "OpenAI API key is not configured",
+          details:
+            "Set OPENAI_API_KEY in your environment (for local dev: .env.local) and restart the Next.js server.",
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to process message", details: errorMessage },
       { status: 500 }

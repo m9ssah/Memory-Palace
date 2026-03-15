@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import * as GaussianSplats3D from "@mkkellogg/gaussian-splats-3d";
 import Spinner from "@/components/ui/Spinner";
-import SpeechRecorder from "@/components/lobby/SpeechRecorder";
+import ConversationPanel from "@/components/viewer/ConversationPanel";
 import type { Memory } from "@/types";
 
 type SplatViewerSceneProps = {
@@ -69,6 +69,7 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
   const [isLeaving, setIsLeaving] = useState(false);
   const year = useMemo(() => getMemoryYear(memory.createdAt), [memory.createdAt]);
   const hasRenderableSplat = Boolean(memory.splatUrl);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
 
   // Create a session in Supabase when the viewer mounts
@@ -83,6 +84,7 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
         if (res.ok) {
           const data = await res.json();
           sessionIdRef.current = data.sessionId;
+          setSessionId(data.sessionId);
         }
       } catch (err) {
         console.error("Failed to create session:", err);
@@ -438,7 +440,7 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
         </div>
       ) : null}
 
-      <SpeechRecorder onSessionEnd={handleSessionEnd} />
+      <ConversationPanel sessionId={sessionId} memoryTitle={memory.title} onConversationEnd={handleSessionEnd} />
 
       <div
         aria-hidden="true"
