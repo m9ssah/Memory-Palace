@@ -12,6 +12,13 @@ type SplatViewerSceneProps = {
 };
 
 const CAMERA_EYE_HEIGHT = 0.1;
+const CAMERA_START_DISTANCE = 1;
+
+type CenterableSplatScene = THREE.Object3D & {
+  splatBuffer?: {
+    sceneCenter?: THREE.Vector3;
+  };
+};
 
 function getMemoryYear(createdAt?: string): string | null {
   if (!createdAt) return null;
@@ -247,6 +254,28 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
       ])
       .then(() => {
         if (isDisposed) return;
+
+        const loadedSplatScene = (viewer as unknown as {
+          getSceneCount?: () => number;
+          getSplatScene?: (sceneIndex: number) => CenterableSplatScene | undefined;
+        }).getSceneCount?.()
+          ? (viewer as unknown as {
+              getSplatScene?: (sceneIndex: number) => CenterableSplatScene | undefined;
+            }).getSplatScene?.(0)
+          : undefined;
+
+        const sceneCenter = loadedSplatScene?.splatBuffer?.sceneCenter;
+        if (loadedSplatScene && sceneCenter) {
+          loadedSplatScene.updateMatrix();
+          const worldCenter = sceneCenter.clone().applyMatrix4(loadedSplatScene.matrix);
+          camera.position.set(worldCenter.x, worldCenter.y + CAMERA_EYE_HEIGHT, worldCenter.z + CAMERA_START_DISTANCE);
+          targetYaw = 0;
+          targetPitch = 0;
+          yaw = 0;
+          pitch = 0;
+          camera.lookAt(worldCenter.x, worldCenter.y + CAMERA_EYE_HEIGHT, worldCenter.z);
+        }
+
         setLoaded(true);
       })
       .catch((error: unknown) => {
