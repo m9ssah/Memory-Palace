@@ -13,6 +13,9 @@ declare module "@mkkellogg/gaussian-splats-3d" {
     path: string;
     splatAlphaRemovalThreshold?: number;
     format?: number;
+    position?: [number, number, number];
+    rotation?: [number, number, number, number];
+    scale?: [number, number, number];
     onProgress?: (percent: number, percentLabel: string, loaderStatus: unknown) => void;
   };
 

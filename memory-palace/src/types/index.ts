@@ -78,6 +78,33 @@ export interface WorldAssets {
   thumbnailUrl?: string;
 }
 
+export interface CognitiveProfile {
+  id: string;
+  sessionId: string;
+  transcript: string;
+  wordFindingDifficulty: number;
+  vocabularyRichness: number;
+  informationDensity: number;
+  emotionalValence: number;
+  coherence: number;
+  totalWords: number;
+  uniqueWords: number;
+  fillerCount: number;
+  summary: string;
+  createdAt: string;
+}
+
+export interface CognitiveMetricPoint {
+  date: string;
+  sessionId: string;
+  memoryTitle?: string;
+  wordFindingDifficulty: number;
+  vocabularyRichness: number;
+  informationDensity: number;
+  emotionalValence: number;
+  coherence: number;
+}
+
 export interface PatientStats {
   totalSessions: number;
   totalMemories: number;

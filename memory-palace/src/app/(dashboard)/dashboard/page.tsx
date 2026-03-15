@@ -11,7 +11,7 @@ import type { Session } from "@/types";
 
 export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [recentSession, setRecentSession] = useState<Session | null>(null);
+  const [recentSession, setRecentSession] = useState<Session & { imageUrl?: string } | null>(null);
   const [stats, setStats] = useState([
     { label: "Total Sessions", value: "–" },
     { label: "Total Memories", value: "–" },
@@ -33,7 +33,7 @@ export default function DashboardPage() {
       // fetch most recent session with memory title
       const { data: sessions } = await supabase
         .from("sessions")
-        .select("*, memories(title)")
+        .select("*, memories(title, image_url)")
         .order("started_at", { ascending: false })
         .limit(1);
 
@@ -43,6 +43,7 @@ export default function DashboardPage() {
           id: s.id,
           memoryId: s.memory_id,
           memoryTitle: s.memories?.title ?? undefined,
+          imageUrl: s.memories?.image_url ?? undefined,
           startedAt: s.started_at,
           endedAt: s.ended_at ?? undefined,
           durationMinutes: s.duration_minutes ?? undefined,
@@ -113,40 +114,53 @@ export default function DashboardPage() {
         </h2>
         {recentSession ? (
           <Card glow>
-            <div className="flex flex-col gap-3">
-              <h3 className="text-xl font-bold text-palace-primary">
-                {recentSession.memoryTitle}
-              </h3>
-              <div className="flex items-center gap-4 text-sm text-foreground/60">
-                <span>{formatDate(recentSession.startedAt)}</span>
-                <span className="h-1 w-1 rounded-full bg-foreground/30" />
-                <span>
-                  {recentSession.durationMinutes
-                    ? formatDuration(recentSession.durationMinutes)
-                    : "In progress"}
-                </span>
-              </div>
-              {recentSession.engagementScore != null && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-foreground/60">
-                    Engagement
-                  </span>
-                  <div className="h-2 flex-1 rounded-full bg-palace-light">
-                    <div
-                      className="h-full rounded-full bg-palace-primary transition-all"
-                      style={{ width: `${recentSession.engagementScore}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-palace-primary">
-                    {recentSession.engagementScore}%
-                  </span>
+            <div className="flex gap-4">
+              {recentSession.imageUrl ? (
+                <img
+                  src={recentSession.imageUrl}
+                  alt={recentSession.memoryTitle ?? "Memory"}
+                  className="h-32 w-32 flex-shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <div className="flex h-32 w-32 flex-shrink-0 items-center justify-center rounded-xl bg-palace-light/50 text-3xl text-palace-primary/30">
+                  ✦
                 </div>
               )}
-              {recentSession.notes && (
-                <p className="text-sm text-foreground/60 line-clamp-2">
-                  {recentSession.notes}
-                </p>
-              )}
+              <div className="flex flex-1 flex-col gap-2">
+                <h3 className="text-lg font-bold text-palace-primary">
+                  {recentSession.memoryTitle}
+                </h3>
+                <div className="flex items-center gap-4 text-sm text-foreground/60">
+                  <span>{formatDate(recentSession.startedAt)}</span>
+                  <span className="h-1 w-1 rounded-full bg-foreground/30" />
+                  <span>
+                    {recentSession.durationMinutes
+                      ? formatDuration(recentSession.durationMinutes)
+                      : "In progress"}
+                  </span>
+                </div>
+                {recentSession.engagementScore != null && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-foreground/60">
+                      Engagement
+                    </span>
+                    <div className="h-2 flex-1 rounded-full bg-palace-light">
+                      <div
+                        className="h-full rounded-full bg-palace-primary transition-all"
+                        style={{ width: `${recentSession.engagementScore}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-palace-primary">
+                      {recentSession.engagementScore}%
+                    </span>
+                  </div>
+                )}
+                {recentSession.notes && (
+                  <p className="text-sm text-foreground/60 line-clamp-2">
+                    {recentSession.notes}
+                  </p>
+                )}
+              </div>
             </div>
           </Card>
         ) : (

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import * as GaussianSplats3D from "@mkkellogg/gaussian-splats-3d";
 import Spinner from "@/components/ui/Spinner";
+import SpeechRecorder from "@/components/lobby/SpeechRecorder";
 import type { Memory } from "@/types";
 
 type SplatViewerSceneProps = {
@@ -12,6 +13,13 @@ type SplatViewerSceneProps = {
 };
 
 const CAMERA_EYE_HEIGHT = 0.1;
+const CAMERA_START_DISTANCE = 1;
+
+type CenterableSplatScene = THREE.Object3D & {
+  splatBuffer?: {
+    sceneCenter?: THREE.Vector3;
+  };
+};
 
 function getMemoryYear(createdAt?: string): string | null {
   if (!createdAt) return null;
@@ -61,6 +69,51 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
   const [isLeaving, setIsLeaving] = useState(false);
   const year = useMemo(() => getMemoryYear(memory.createdAt), [memory.createdAt]);
   const hasRenderableSplat = Boolean(memory.splatUrl);
+  const sessionIdRef = useRef<string | null>(null);
+
+  // Create a session in Supabase when the viewer mounts
+  useEffect(() => {
+    async function initSession() {
+      try {
+        const res = await fetch("/api/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memoryId: memory.id, worldId: memory.worldId ?? null }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          sessionIdRef.current = data.sessionId;
+        }
+      } catch (err) {
+        console.error("Failed to create session:", err);
+      }
+    }
+    initSession();
+
+    return () => {
+      // End the session when leaving
+      if (sessionIdRef.current) {
+        fetch(`/api/sessions/${sessionIdRef.current}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "end" }),
+        }).catch(() => {});
+      }
+    };
+  }, [memory.id, memory.worldId]);
+
+  const handleSessionEnd = useCallback(async (transcript: string) => {
+    if (!transcript.trim() || !sessionIdRef.current) return;
+    try {
+      await fetch(`/api/sessions/${sessionIdRef.current}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript }),
+      });
+    } catch (err) {
+      console.error("Failed to send transcript for analysis:", err);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -247,6 +300,28 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
       ])
       .then(() => {
         if (isDisposed) return;
+
+        const loadedSplatScene = (viewer as unknown as {
+          getSceneCount?: () => number;
+          getSplatScene?: (sceneIndex: number) => CenterableSplatScene | undefined;
+        }).getSceneCount?.()
+          ? (viewer as unknown as {
+              getSplatScene?: (sceneIndex: number) => CenterableSplatScene | undefined;
+            }).getSplatScene?.(0)
+          : undefined;
+
+        const sceneCenter = loadedSplatScene?.splatBuffer?.sceneCenter;
+        if (loadedSplatScene && sceneCenter) {
+          loadedSplatScene.updateMatrix();
+          const worldCenter = sceneCenter.clone().applyMatrix4(loadedSplatScene.matrix);
+          camera.position.set(worldCenter.x, worldCenter.y + CAMERA_EYE_HEIGHT, worldCenter.z + CAMERA_START_DISTANCE);
+          targetYaw = 0;
+          targetPitch = 0;
+          yaw = 0;
+          pitch = 0;
+          camera.lookAt(worldCenter.x, worldCenter.y + CAMERA_EYE_HEIGHT, worldCenter.z);
+        }
+
         setLoaded(true);
       })
       .catch((error: unknown) => {
@@ -362,6 +437,8 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
           <Spinner />
         </div>
       ) : null}
+
+      <SpeechRecorder onSessionEnd={handleSessionEnd} />
 
       <div
         aria-hidden="true"

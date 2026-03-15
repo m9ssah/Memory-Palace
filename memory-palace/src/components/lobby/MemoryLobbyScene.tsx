@@ -857,7 +857,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-7">
         <div className="flex items-center gap-4">
           <Link
-            href="/"
+            href="/dashboard"
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-purple-300/25 text-purple-300/60 transition-colors hover:border-purple-300/60 hover:text-purple-100"
             title="Exit lobby"
           >
