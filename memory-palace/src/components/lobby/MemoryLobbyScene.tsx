@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
-import { useFadeTransition } from "@/hooks/useFadeTransition";
 import type { Memory } from "@/types";
 
 type LobbySceneProps = {
@@ -132,10 +131,12 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const selectedMemoryRef = useRef<LobbyMemory | null>(null);
+  const fadeTimersRef = useRef<number[]>([]);
   const [selectedMemory, setSelectedMemory] = useState<LobbyMemory | null>(null);
   const [hoveredMemory, setHoveredMemory] = useState<LobbyMemory | null>(null);
   const [isEntering, setIsEntering] = useState(false);
-  const { triggerFade, FadeOverlay } = useFadeTransition();
+  const [isFading, setIsFading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const lobbyMemories = useMemo<LobbyMemory[]>(() => {
     if (memories.length === 0) return FALLBACK_MEMORIES;
@@ -161,6 +162,23 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
   useEffect(() => {
     selectedMemoryRef.current = selectedMemory;
   }, [selectedMemory]);
+
+  useEffect(() => {
+    return () => {
+      fadeTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      fadeTimersRef.current = [];
+    };
+  }, []);
+
+  const triggerFade = (callback: () => void, durationMs = 600) => {
+    setIsMounted(true);
+    window.requestAnimationFrame(() => setIsFading(true));
+    const timerId = window.setTimeout(() => {
+      fadeTimersRef.current = fadeTimersRef.current.filter((id) => id !== timerId);
+      callback();
+    }, durationMs);
+    fadeTimersRef.current.push(timerId);
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -905,7 +923,13 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
         </div>
       </div>
 
-      <FadeOverlay durationMs={600} />
+      {isMounted && (
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 z-50 bg-black transition-opacity ${isFading ? "opacity-100" : "opacity-0"}`}
+          style={{ transitionDuration: "600ms" }}
+        />
+      )}
     </div>
   );
 }

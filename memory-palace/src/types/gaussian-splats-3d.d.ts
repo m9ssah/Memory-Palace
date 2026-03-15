@@ -1,0 +1,22 @@
+declare module "@mkkellogg/gaussian-splats-3d" {
+  import * as THREE from "three";
+
+  export type DropInViewerOptions = {
+    gpuAcceleratedSort?: boolean;
+    sharedMemoryForWorkers?: boolean;
+    renderer: THREE.WebGLRenderer;
+    camera: THREE.Camera;
+    scene: THREE.Scene;
+  };
+
+  export type SplatSceneDefinition = {
+    path: string;
+    splatAlphaRemovalThreshold?: number;
+  };
+
+  export class DropInViewer extends THREE.Object3D {
+    constructor(options: DropInViewerOptions);
+    addSplatScenes(scenes: SplatSceneDefinition[]): Promise<void>;
+    dispose(): void;
+  }
+}

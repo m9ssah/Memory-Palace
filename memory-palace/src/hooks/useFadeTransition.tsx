@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import type { ReactElement } from "react";
 
 type UseFadeTransitionOptions = {
   initialVisible?: boolean;
@@ -16,7 +16,16 @@ type FadeOverlayProps = {
 
 type FadeCallback = () => void;
 
-export function useFadeTransition(options: UseFadeTransitionOptions = {}) {
+type UseFadeTransitionResult = {
+  isFading: boolean;
+  isMounted: boolean;
+  triggerFade: (callback: FadeCallback, durationMs?: number) => void;
+  showFade: () => void;
+  hideFade: (durationMs?: number, onComplete?: FadeCallback) => void;
+  FadeOverlay: ({ className, durationMs }: FadeOverlayProps) => ReactElement | null;
+};
+
+export function useFadeTransition(options: UseFadeTransitionOptions = {}): UseFadeTransitionResult {
   const {
     initialVisible = false,
     initialMounted = initialVisible,
@@ -77,11 +86,11 @@ export function useFadeTransition(options: UseFadeTransitionOptions = {}) {
       return (
         <div
           aria-hidden="true"
-          className={cn(
+          className={[
             "pointer-events-none absolute inset-0 z-50 bg-black transition-opacity",
             isFading ? "opacity-100" : "opacity-0",
             className,
-          )}
+          ].filter(Boolean).join(" ")}
           style={{ transitionDuration: `${durationMs}ms` }}
         />
       );
@@ -90,6 +99,7 @@ export function useFadeTransition(options: UseFadeTransitionOptions = {}) {
 
   return {
     isFading,
+    isMounted,
     triggerFade,
     showFade,
     hideFade,

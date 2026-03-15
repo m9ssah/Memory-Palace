@@ -8,7 +8,7 @@ type RouteContext = {
 
 export async function GET(_request: Request, context: RouteContext) {
 	const { memoryId } = await context.params;
-	const memory = getMemory(memoryId);
+	const memory = await getMemory(memoryId);
 
 	if (!memory) {
 		return NextResponse.json({ error: "Memory not found" }, { status: 404 });

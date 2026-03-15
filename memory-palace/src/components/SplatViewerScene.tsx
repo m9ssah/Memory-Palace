@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import * as GaussianSplats3D from "@mkkellogg/gaussian-splats-3d";
 import Spinner from "@/components/ui/Spinner";
-import { useFadeTransition } from "@/hooks/useFadeTransition";
 import type { Memory } from "@/types";
 
 type SplatViewerSceneProps = {
@@ -54,15 +53,27 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
   const viewerRef = useRef<GaussianSplats3D.DropInViewer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const fadeTimersRef = useRef<number[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
   const year = useMemo(() => getMemoryYear(memory.createdAt), [memory.createdAt]);
   const hasRenderableSplat = Boolean(memory.splatUrl);
-  const { triggerFade, hideFade, FadeOverlay } = useFadeTransition({
-    initialVisible: true,
-    initialMounted: true,
-    defaultDurationMs: 700,
-  });
+
+  useEffect(() => {
+    return () => {
+      fadeTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      fadeTimersRef.current = [];
+    };
+  }, []);
+
+  const queueFadeTimer = (callback: () => void, delayMs: number) => {
+    const timerId = window.setTimeout(() => {
+      fadeTimersRef.current = fadeTimersRef.current.filter((id) => id !== timerId);
+      callback();
+    }, delayMs);
+    fadeTimersRef.current.push(timerId);
+  };
 
   useEffect(() => {
     if (!memory.splatUrl) return;
@@ -262,18 +273,16 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
     };
   }, [memory.splatUrl]);
 
-  useEffect(() => {
-    if (!loaded || loadError) return;
-    hideFade(700);
-  }, [hideFade, loadError, loaded]);
-
   const handleBackToLobby = () => {
-    triggerFade(() => {
+    setIsLeaving(true);
+    queueFadeTimer(() => {
       router.push("/lobby");
     }, 500);
   };
 
   const showMemoryPending = Boolean(loadError) || !hasRenderableSplat;
+  const showLoadOverlay = !loaded && !showMemoryPending;
+  const overlayVisible = isLeaving || showLoadOverlay;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#0d0a1e]">
@@ -339,7 +348,11 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
         </div>
       ) : null}
 
-      <FadeOverlay durationMs={loaded && !showMemoryPending ? 700 : 500} />
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-0 z-50 bg-black transition-opacity ${overlayVisible ? "opacity-100" : "opacity-0"}`}
+        style={{ transitionDuration: `${showLoadOverlay ? 700 : 500}ms` }}
+      />
     </div>
   );
 }

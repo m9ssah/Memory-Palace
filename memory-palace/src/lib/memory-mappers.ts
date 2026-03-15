@@ -27,7 +27,6 @@ function extractFirstSplatUrl(splatsUrls?: string | null): string | null {
       if (values.length > 0 && typeof values[0] === "string") return values[0] as string;
     }
   } catch {
-    // If it's a plain URL string (not JSON), return as-is
     if (splatsUrls.startsWith("http")) return splatsUrls;
   }
   return null;
