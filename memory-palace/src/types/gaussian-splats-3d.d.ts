@@ -12,6 +12,8 @@ declare module "@mkkellogg/gaussian-splats-3d" {
   export type SplatSceneDefinition = {
     path: string;
     splatAlphaRemovalThreshold?: number;
+    format?: number;
+    onProgress?: (percent: number, percentLabel: string, loaderStatus: unknown) => void;
   };
 
   export class DropInViewer extends THREE.Object3D {

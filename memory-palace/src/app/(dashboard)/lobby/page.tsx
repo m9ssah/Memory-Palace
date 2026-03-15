@@ -6,7 +6,9 @@ export default async function LobbyPage() {
 	let memories: ReturnType<typeof mapMemoryRecord>[] = [];
 	try {
 		const raw = await getAllMemories();
-		memories = (raw ?? []).map(mapMemoryRecord);
+		const mapped = (raw ?? []).map(mapMemoryRecord);
+		const renderable = mapped.filter((memory) => Boolean(memory.splatUrl));
+		memories = renderable.length > 0 ? renderable : mapped;
 	} catch (error) {
 		console.error("Failed to fetch memories for lobby", error);
 		// Fall through to lobby with fallback memories.

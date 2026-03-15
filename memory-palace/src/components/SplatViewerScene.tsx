@@ -11,6 +11,8 @@ type SplatViewerSceneProps = {
   memory: Memory;
 };
 
+const CAMERA_EYE_HEIGHT = 0.1;
+
 function getMemoryYear(createdAt?: string): string | null {
   if (!createdAt) return null;
   const parsed = new Date(createdAt);
@@ -100,7 +102,8 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
 
     const camera = new THREE.PerspectiveCamera(72, 1, 0.01, 500);
     camera.rotation.order = "YXZ";
-    camera.position.set(0, 1.65, 0);
+    camera.position.set(0, CAMERA_EYE_HEIGHT, 4);
+    camera.lookAt(0, CAMERA_EYE_HEIGHT, 0);
     cameraRef.current = camera;
     scene.add(camera);
 
@@ -113,7 +116,7 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
     rendererRef.current = renderer;
 
     const viewer = new GaussianSplats3D.DropInViewer({
-      gpuAcceleratedSort: true,
+      gpuAcceleratedSort: false,
       sharedMemoryForWorkers: false,
       renderer,
       camera,
@@ -121,13 +124,14 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
     });
     viewerRef.current = viewer;
     scene.add(viewer);
+    const maybeViewer = viewer as unknown as { update?: () => void };
 
     const updateCameraRotation = () => {
       yaw += (targetYaw - yaw) * 0.09;
       pitch += (targetPitch - pitch) * 0.09;
       camera.rotation.y = yaw;
       camera.rotation.x = pitch;
-      camera.position.y = 1.65;
+      camera.position.y = CAMERA_EYE_HEIGHT;
     };
 
     const animate = () => {
@@ -146,8 +150,14 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
         moveDirection.multiplyScalar(moveSpeed);
         camera.position.x += moveDirection.x;
         camera.position.z += moveDirection.z;
-        camera.position.y = 1.65;
+        camera.position.y = CAMERA_EYE_HEIGHT;
       }
+
+      if (typeof maybeViewer.update === "function") {
+        maybeViewer.update();
+      }
+
+      renderer.render(scene, camera);
     };
 
     const setCanvasSize = () => {
@@ -228,6 +238,11 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
         {
           path: memory.splatUrl,
           splatAlphaRemovalThreshold: 5,
+          // Flip the imported splat upright to match world orientation.
+          rotation: [1, 0, 0, 0],
+          format: memory.splatUrl.toLowerCase().endsWith(".spz")
+            ? (GaussianSplats3D as unknown as { SceneFormat?: { Spz?: number } }).SceneFormat?.Spz
+            : undefined,
         },
       ])
       .then(() => {
