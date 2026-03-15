@@ -1,39 +1,79 @@
-import { NextResponse } from "next/server";
-import { getSession, endSession, updateSessionEngagement } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { getSession, endSession, addSessionMessage, updateSessionEngagement } from "@/lib/db";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ sessionId: string }> },
-) {
-  try {
-    const { sessionId } = await params;
-    const session = await getSession(sessionId);
-    return NextResponse.json(session);
-  } catch (err) {
-    console.error("GET /api/sessions/[id] error:", err);
-    return NextResponse.json({ error: "Session not found" }, { status: 404 });
-  }
+type RouteContext = {
+	params: Promise<{ sessionId: string }>;
+};
+
+export async function GET(_request: Request, context: RouteContext) {
+	try {
+		const { sessionId } = await context.params;
+		const session = await getSession(sessionId);
+
+		if (!session) {
+			return NextResponse.json(
+				{ error: "Session not found" },
+				{ status: 404 }
+			);
+		}
+
+		return NextResponse.json(session);
+	} catch (error) {
+		console.error("Error fetching session:", error);
+		return NextResponse.json(
+			{ error: "Failed to fetch session" },
+			{ status: 500 }
+		);
+	}
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ sessionId: string }> },
-) {
-  try {
-    const { sessionId } = await params;
-    const body = await request.json();
+export async function POST(request: NextRequest, context: RouteContext) {
+	try {
+		const { sessionId } = await context.params;
+		const body = await request.json();
+		const { action, message, role, engagementScore, notes } = body;
 
-    if (body.end) {
-      await endSession(sessionId);
-    }
-    if (body.engagementScore !== undefined) {
-      await updateSessionEngagement(sessionId, body.engagementScore, body.notes);
-    }
+		// Verify session exists
+		const session = await getSession(sessionId);
+		if (!session) {
+			return NextResponse.json(
+				{ error: "Session not found" },
+				{ status: 404 }
+			);
+		}
 
-    const session = await getSession(sessionId);
-    return NextResponse.json(session);
-  } catch (err) {
-    console.error("PATCH /api/sessions/[id] error:", err);
-    return NextResponse.json({ error: "Failed to update session" }, { status: 500 });
-  }
+		if (action === "addMessage") {
+			if (!message || !role) {
+				return NextResponse.json(
+					{ error: "message and role are required" },
+					{ status: 400 }
+				);
+			}
+			await addSessionMessage(sessionId, role, message);
+		} else if (action === "end") {
+			await endSession(sessionId);
+		} else if (action === "updateEngagement") {
+			if (engagementScore === undefined) {
+				return NextResponse.json(
+					{ error: "engagementScore is required" },
+					{ status: 400 }
+				);
+			}
+			await updateSessionEngagement(sessionId, engagementScore, notes);
+		} else {
+			return NextResponse.json(
+				{ error: "Unknown action" },
+				{ status: 400 }
+			);
+		}
+
+		const updated = await getSession(sessionId);
+		return NextResponse.json(updated);
+	} catch (error) {
+		console.error("Error updating session:", error);
+		return NextResponse.json(
+			{ error: "Failed to update session" },
+			{ status: 500 }
+		);
+	}
 }

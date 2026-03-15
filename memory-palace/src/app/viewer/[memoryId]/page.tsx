@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
-import WorldViewer from "@/components/viewer/WorldViewer";
-import { getMemory } from "@/lib/db";
+import { redirect } from "next/navigation";
+import SplatViewerScene from "@/components/SplatViewerScene";
 import { mapMemoryRecord } from "@/lib/memory-mappers";
+import { supabase } from "@/lib/db";
 
 type ViewerPageProps = {
 	params: Promise<{ memoryId: string }>;
@@ -9,11 +9,15 @@ type ViewerPageProps = {
 
 export default async function ViewerPage({ params }: ViewerPageProps) {
 	const { memoryId } = await params;
-	const memory = getMemory(memoryId);
+	const { data, error } = await supabase
+		.from("memories")
+		.select("*, worlds!fk_memories_world(api_world_id, marble_url, splats_urls)")
+		.eq("id", memoryId)
+		.single();
 
-	if (!memory) {
-		notFound();
+	if (error || !data) {
+		redirect("/lobby");
 	}
 
-	return <WorldViewer memory={mapMemoryRecord(memory as never)} />;
+	return <SplatViewerScene memory={mapMemoryRecord(data)} />;
 }
