@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 
@@ -10,10 +11,13 @@ interface NewSessionModalProps {
 }
 
 export default function NewSessionModal({ open, onClose }: NewSessionModalProps) {
+  const router = useRouter();
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<File | null>(null);
 
   const reset = useCallback(() => {
     setPreview(null);
@@ -28,6 +32,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
 
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith("image/")) return;
+    fileRef.current = file;
     setFileName(file.name);
     const reader = new FileReader();
     reader.onload = (e) => setPreview(e.target?.result as string);
@@ -52,10 +57,99 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
     [handleFile]
   );
 
-  const handleStartSession = useCallback(() => {
-    // TODO: upload image via API, create memory + session, navigate to viewer
-    handleClose();
-  }, [handleClose]);
+  const handleStartSession = useCallback(async () => {
+    if (!preview || !fileRef.current || !fileName) return;
+    
+    setLoading(true);
+    try {
+      // Step 1: Create memory with image preview
+      const memoryResponse = await fetch("/api/memories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: fileName.replace(/\.[^.]+$/, ""), // Remove extension
+          description: `Memory created from ${fileName}`,
+          imageUrl: preview, // Store preview as base64
+          tags: "imported",
+        }),
+      });
+
+      if (!memoryResponse.ok) {
+        throw new Error("Failed to create memory");
+      }
+
+      const memoryData = await memoryResponse.json();
+      const memoryId = memoryData.id;
+
+      // Step 2: Generate world from memory
+      const worldResponse = await fetch("/api/world/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memoryId,
+        }),
+      });
+
+      if (!worldResponse.ok) {
+        throw new Error("Failed to generate world");
+      }
+
+      const worldData = await worldResponse.json();
+      const operationId = worldData.operationId;
+
+      // Step 3: Create session (worldId may be null if world is still generating)
+      const sessionResponse = await fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memoryId,
+          // Don't send worldId since it's still pending - will be linked when generation completes
+        }),
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error("Failed to create session");
+      }
+
+      const sessionData = await sessionResponse.json();
+      const sessionId = sessionData.sessionId;
+
+      // Step 4: Poll for world generation completion and link to memory
+      let maxAttempts = 120; // 10 minutes with 5 second intervals
+      let worldGenComplete = false;
+      
+      while (maxAttempts > 0 && !worldGenComplete) {
+        try {
+          const statusResponse = await fetch(
+            `/api/world/status/${operationId}?memoryId=${memoryId}`
+          );
+          const statusData = await statusResponse.json();
+          
+          if (statusData.status === "ready") {
+            worldGenComplete = true;
+            break;
+          }
+        } catch (err) {
+          console.error("Error checking world generation status:", err);
+        }
+        
+        maxAttempts--;
+        if (!worldGenComplete && maxAttempts > 0) {
+          // Wait 5 seconds before polling again
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
+
+      // Step 5: Navigate to viewer
+      handleClose();
+      router.push(`/viewer/${memoryId}`);
+    } catch (error) {
+      console.error("Error starting session:", error);
+      alert("Failed to start session. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [preview, fileName, handleClose, router]);
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -144,12 +238,12 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
             variant="primary"
             size="md"
             className="flex-1"
-            disabled={!preview}
+            disabled={!preview || loading}
             onClick={handleStartSession}
           >
-            Generate World
+            {loading ? "Generating..." : "Generate World"}
           </Button>
-          <Button variant="secondary" size="md" onClick={handleClose}>
+          <Button variant="secondary" size="md" onClick={handleClose} disabled={loading}>
             Cancel
           </Button>
         </div>

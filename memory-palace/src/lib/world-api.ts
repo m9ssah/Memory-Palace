@@ -172,8 +172,20 @@ function parseWorldResult(result: { response?: Record<string, unknown> }): World
   const mesh = assets.mesh as { collider_mesh_url?: string } | undefined;
   const imagery = assets.imagery as { pano_url?: string } | undefined;
 
+  // Extract world ID - try multiple possible field names
+  const worldId = 
+    (response.id as string) ||
+    (response.world_id as string) ||
+    (response.worldId as string) ||
+    (assets.world_id as string) ||
+    '';
+
+  if (!worldId) {
+    console.warn("World ID not found in response:", JSON.stringify(response).substring(0, 200));
+  }
+
   return {
-    worldId: response.id as string,
+    worldId,
     marbleUrl: response.world_marble_url as string | undefined,
     caption: assets.caption as string | undefined,
     splats: splats?.spz_urls,

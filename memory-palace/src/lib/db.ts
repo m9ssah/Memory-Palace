@@ -1,3 +1,4 @@
+import { WorldAssets } from "@/types";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -29,7 +30,7 @@ export async function createMemory(
 export async function getMemory(memoryId: string) {
   const { data, error } = await supabase
     .from("memories")
-    .select("*, worlds(api_world_id, marble_url)")
+    .select("*, worlds!worlds_memory_id_fkey(api_world_id, marble_url)")
     .eq("id", memoryId)
     .single();
   if (error) throw error;
@@ -39,7 +40,7 @@ export async function getMemory(memoryId: string) {
 export async function getAllMemories() {
   const { data, error } = await supabase
     .from("memories")
-    .select("*, worlds(api_world_id, marble_url)")
+    .select("*, worlds!worlds_memory_id_fkey(api_world_id, marble_url)")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
@@ -68,13 +69,13 @@ export async function deleteMemory(memoryId: string) {
 
 // --------------- World operations ---------------
 
-export async function createWorld(apiWorldId: string, name: string, worldData: Record<string, unknown> = {}) {
+export async function createWorld(apiWorldId: string, name: string, worldData: WorldAssets) {
   const { data, error } = await supabase
     .from("worlds")
     .insert({
       api_world_id: apiWorldId,
       name,
-      model: (worldData.model as string) || "Marble 0.1-mini",
+      model: "Marble 0.1-mini",
       marble_url: (worldData.marbleUrl as string) ?? null,
       caption: (worldData.caption as string) ?? null,
       splats_urls: worldData.splats ? JSON.stringify(worldData.splats) : null,

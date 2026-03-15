@@ -9,7 +9,7 @@ type ViewerPageProps = {
 
 export default async function ViewerPage({ params }: ViewerPageProps) {
 	const { memoryId } = await params;
-	const memory = getMemory(memoryId);
+	const memory = await getMemory(memoryId);
 
 	if (!memory) {
 		notFound();
