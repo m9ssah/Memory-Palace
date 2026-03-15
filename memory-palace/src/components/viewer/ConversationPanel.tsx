@@ -100,6 +100,9 @@ export default function ConversationPanel({
   const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const onConversationEndRef = useRef(onConversationEnd);
+  onConversationEndRef.current = onConversationEnd;
+
   const {
     status,
     transcript,
@@ -111,6 +114,19 @@ export default function ConversationPanel({
     getFullTranscript,
     clearError,
   } = useRealtimeConversation({ sessionId, memoryTitle });
+
+  const getFullTranscriptRef = useRef(getFullTranscript);
+  getFullTranscriptRef.current = getFullTranscript;
+
+  // Send transcript for analysis on unmount (e.g. user navigates away)
+  useEffect(() => {
+    return () => {
+      const text = getFullTranscriptRef.current();
+      if (text.trim() && onConversationEndRef.current) {
+        onConversationEndRef.current(text);
+      }
+    };
+  }, []);
 
   const isConnected = status === "connected";
   const isConnecting = status === "connecting";

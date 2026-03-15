@@ -104,17 +104,16 @@ export default function SplatViewerScene({ memory }: SplatViewerSceneProps) {
     };
   }, [memory.id, memory.worldId]);
 
-  const handleSessionEnd = useCallback(async (transcript: string) => {
+  const handleSessionEnd = useCallback((transcript: string) => {
     if (!transcript.trim() || !sessionIdRef.current) return;
-    try {
-      await fetch(`/api/sessions/${sessionIdRef.current}/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript }),
-      });
-    } catch (err) {
+    fetch(`/api/sessions/${sessionIdRef.current}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript }),
+      keepalive: true,
+    }).catch((err) => {
       console.error("Failed to send transcript for analysis:", err);
-    }
+    });
   }, []);
 
   useEffect(() => {

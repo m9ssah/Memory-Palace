@@ -25,11 +25,13 @@ const DOOR_SLOTS = [
   { pos: [-5.88, 0] as const, ry: Math.PI / 2 },
 ];
 
+const DEMO_MEMORY_ID = "296bede2-ec62-4025-8b3c-da1579301b59";
+
 const FALLBACK_MEMORIES: LobbyMemory[] = [
-  { id: "memory-1", title: "Grandma's Kitchen", year: "Summer 1974", hue: "#7A43FC", light: 0x7A43FC },
-  { id: "memory-2", title: "Birthday at the Lake", year: "August 1982", hue: "#9B6BFF", light: 0x9B6BFF },
-  { id: "memory-3", title: "The Old Garden", year: "Spring 1969", hue: "#5E2EB8", light: 0x5E2EB8 },
-  { id: "memory-4", title: "Christmas Morning", year: "December 1978", hue: "#B48AFF", light: 0xB48AFF },
+  { id: DEMO_MEMORY_ID, title: "Grandma's Kitchen", year: "Summer 2000", hue: "#7A43FC", light: 0x7A43FC },
+  { id: DEMO_MEMORY_ID, title: "Birthday at the Lake", year: "August 2005", hue: "#9B6BFF", light: 0x9B6BFF },
+  { id: DEMO_MEMORY_ID, title: "The Old Garden", year: "Spring 2001", hue: "#5E2EB8", light: 0x5E2EB8 },
+  { id: DEMO_MEMORY_ID, title: "Wedding", year: "December 2010", hue: "#B48AFF", light: 0xB48AFF },
 ];
 
 function labelYear(dateText?: string): string {
