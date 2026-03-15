@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback } from "react";
 import MemoryLobbyScene from "@/components/lobby/MemoryLobbyScene";
 import { getAllMemories } from "@/lib/db";
