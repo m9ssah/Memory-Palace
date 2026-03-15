@@ -70,7 +70,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
         description: `Memory created from ${fileName}`,
         imageUrl: preview, // Store preview as base64
         tags: "imported",
-        annotation: annotation.trim() || null, // Include annotation if provided and not just whitespace
+        annotation: annotation || null, // Include annotation if provided
       };
       console.log("Creating memory with payload:", payload);
       
