@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import MemoryLobbyScene from "@/components/lobby/MemoryLobbyScene";
 import { getAllMemories } from "@/lib/db";
 import { mapMemoryRecord } from "@/lib/memory-mappers";
@@ -12,7 +11,6 @@ export default async function LobbyPage() {
 		memories = renderable.length > 0 ? renderable : mapped;
 	} catch (error) {
 		console.error("Failed to fetch memories for lobby", error);
-		// Fall through to lobby with fallback memories.
 	}
 
 	return (

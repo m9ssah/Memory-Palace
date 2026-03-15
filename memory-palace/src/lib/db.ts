@@ -40,7 +40,7 @@ export async function getMemory(memoryId: string) {
 export async function getAllMemories() {
   const { data, error } = await supabase
     .from("memories")
-    .select("*, worlds!fk_memories_world(api_world_id, marble_url, splats_urls)")
+    .select("id, title, description, image_path, world_id, tags, annotation, created_at, updated_at, worlds!fk_memories_world(api_world_id, marble_url, splats_urls)")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
