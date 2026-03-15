@@ -15,6 +15,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [memoryName, setMemoryName] = useState("");
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<File | null>(null);
@@ -22,6 +23,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
   const reset = useCallback(() => {
     setPreview(null);
     setFileName(null);
+    setMemoryName("");
     setDragOver(false);
   }, []);
 
@@ -67,7 +69,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: fileName.replace(/\.[^.]+$/, ""), // Remove extension
+          title: memoryName.trim() || fileName.replace(/\.[^.]+$/, ""),
           description: `Memory created from ${fileName}`,
           imageUrl: preview, // Store preview as base64
           tags: "imported",
@@ -149,7 +151,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
     } finally {
       setLoading(false);
     }
-  }, [preview, fileName, handleClose, router]);
+  }, [preview, fileName, memoryName, handleClose, router]);
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -231,6 +233,23 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
           className="hidden"
           onChange={handleInputChange}
         />
+
+        {/* Memory name input */}
+        {preview && (
+          <div className="space-y-1.5">
+            <label htmlFor="memoryName" className="block text-sm font-medium text-foreground/70">
+              Memory Name
+            </label>
+            <input
+              id="memoryName"
+              type="text"
+              value={memoryName}
+              onChange={(e) => setMemoryName(e.target.value)}
+              placeholder={fileName?.replace(/\.[^.]+$/, "") ?? "Name this memory"}
+              className="w-full rounded-lg border border-palace-mid/40 bg-palace-light/30 px-3 py-2 text-sm text-foreground placeholder-foreground/40 focus:border-palace-primary/50 focus:outline-none focus:ring-1 focus:ring-palace-primary/30"
+            />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-1">
