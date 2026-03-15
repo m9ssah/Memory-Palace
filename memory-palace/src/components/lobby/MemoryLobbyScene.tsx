@@ -644,11 +644,10 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       <canvas ref={canvasRef} className="h-full w-full" />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-7">
-        <div className="text-[20px] uppercase tracking-[0.25em] text-amber-100/90">
-          Memoir
-          <span className="mt-1 block text-[11px] italic tracking-[0.4em] text-amber-300/45">Memory Palace</span>
+        <div className="text-[20px] uppercase tracking-[0.25em] text-white">
+          Memory Palace
         </div>
-        <div className="text-right text-[12px] italic tracking-[0.2em] text-amber-300/45">
+        <div className="text-right text-[12px] italic tracking-[0.2em] text-white">
           Drag to look around
           <br />
           Click a door to enter
@@ -656,7 +655,7 @@ export default function MemoryLobbyScene({ memories }: LobbySceneProps) {
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-7 flex justify-center">
-        <div className="text-[12px] italic tracking-[0.2em] text-amber-200/70">{tooltipText}</div>
+        <div className="text-[12px] italic tracking-[0.2em] text-white">{tooltipText}</div>
       </div>
 
       <div
