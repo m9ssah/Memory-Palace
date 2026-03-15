@@ -15,6 +15,7 @@ export async function createMemory(
   imagePath?: string,
   description?: string,
   tags?: string,
+  annotation?: string,
 ) {
   const { error } = await supabase.from("memories").insert({
     id,
@@ -23,6 +24,7 @@ export async function createMemory(
     image_path: imagePath ?? null,
     description: description ?? null,
     tags: tags ?? null,
+    annotation: annotation ?? null,
   });
   if (error) throw error;
 }
@@ -47,7 +49,7 @@ export async function getAllMemories() {
 }
 
 export async function updateMemory(memoryId: string, updates: Record<string, unknown>) {
-  const allowedFields = ["title", "description", "tags", "image_url", "image_path"];
+  const allowedFields = ["title", "description", "tags", "image_url", "image_path", "annotation"];
   const filtered: Record<string, unknown> = {};
   for (const key of Object.keys(updates)) {
     if (allowedFields.includes(key)) filtered[key] = updates[key];

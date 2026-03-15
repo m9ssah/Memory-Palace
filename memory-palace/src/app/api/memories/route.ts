@@ -20,7 +20,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
-		const { title, description, imageUrl, imagePath, tags } = body;
+		const { title, description, imageUrl, imagePath, tags, annotation } = body;
+
+		console.log("POST /api/memories - Received body:", { title, description, tags, annotation, imageUrl: imageUrl ? "present" : "missing", imagePath });
 
 		if (!title) {
 			return NextResponse.json(
@@ -30,12 +32,12 @@ export async function POST(request: NextRequest) {
 		}
 
 		const id = uuidv4();
-		await createMemory(id, title, imageUrl, imagePath, description, tags);
+		await createMemory(id, title, imageUrl, imagePath, description, tags, annotation);
 
-		return NextResponse.json(
-			{ id, title, description, imageUrl, imagePath, tags },
-			{ status: 201 }
-		);
+		const response = { id, title, description, imageUrl, imagePath, tags, annotation };
+		console.log("POST /api/memories - Created memory:", { id, title, annotation });
+		
+		return NextResponse.json(response, { status: 201 });
 	} catch (error) {
 		console.error("Error creating memory:", error);
 		return NextResponse.json(

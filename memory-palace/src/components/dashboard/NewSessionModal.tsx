@@ -15,6 +15,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [annotation, setAnnotation] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<File | null>(null);
@@ -22,6 +23,7 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
   const reset = useCallback(() => {
     setPreview(null);
     setFileName(null);
+    setAnnotation("");
     setDragOver(false);
   }, []);
 
@@ -63,15 +65,19 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
     setLoading(true);
     try {
       // Step 1: Create memory with image preview
+      const payload = {
+        title: fileName.replace(/\.[^.]+$/, ""), // Remove extension
+        description: `Memory created from ${fileName}`,
+        imageUrl: preview, // Store preview as base64
+        tags: "imported",
+        annotation: annotation.trim() || null, // Include annotation if provided and not just whitespace
+      };
+      console.log("Creating memory with payload:", payload);
+      
       const memoryResponse = await fetch("/api/memories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: fileName.replace(/\.[^.]+$/, ""), // Remove extension
-          description: `Memory created from ${fileName}`,
-          imageUrl: preview, // Store preview as base64
-          tags: "imported",
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!memoryResponse.ok) {
@@ -231,6 +237,23 @@ export default function NewSessionModal({ open, onClose }: NewSessionModalProps)
           className="hidden"
           onChange={handleInputChange}
         />
+
+        {/* Annotation input */}
+        {preview && (
+          <div className="space-y-2">
+            <label htmlFor="annotation" className="block text-sm font-medium text-foreground/70">
+              Annotations
+            </label>
+            <textarea
+              id="annotation"
+              value={annotation}
+              onChange={(e) => setAnnotation(e.target.value)}
+              placeholder="For caregivers: add any relevant information about this memory, including particular objects, people, or experiences."
+              className="w-full rounded-lg border border-palace-mid/40 bg-palace-light/30 px-3 py-2 text-sm text-foreground placeholder-foreground/40 focus:border-palace-primary/50 focus:outline-none focus:ring-1 focus:ring-palace-primary/30"
+              rows={3}
+            />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-1">
