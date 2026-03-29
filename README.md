@@ -1,11 +1,5 @@
 # Memory Palace
 
-There's a recurring image in films about dementia — a loved one patiently retelling cherished memories, desperate to keep someone tethered to who they are. For many, that's not a movie scene. It's Sunday afternoon. It's a phone call that ends in silence.
-
-My grandfather recently began to develop memory loss, and with them, pieces of the moments we built together. Watching that happen is its own kind of grief — and it's what pushed us to act.
-
-We built a tool for people like him. Traditional memory exercises can feel cold and clinical, so we wanted something different: reminiscence that feels immersive, emotionally resonant, and deeply personal. A place where meaningful life moments aren't just recalled — they're revisited. Patients can explore the spaces, stories, and feelings that shaped who they are, and reconnect with the people who matter most.
-
 This project is a therapeutic platform that helps patients engage with and recall their memories through AI-powered conversations and immersive 3D environments. Memory Palace is designed to support cognitive therapy, memory rehabilitation, and engagement for patients with memory impairments, particularly those with dementia.
 
 ## Overview
